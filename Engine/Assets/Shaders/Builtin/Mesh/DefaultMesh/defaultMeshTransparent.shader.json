@@ -1,0 +1,9 @@
+{
+  "name": "DefaultMeshTransparent",
+  "stages": [
+    { "stage": "VS", "file": "f6485468f3b0f105", "entry": "main", "profile": "vs_6_0" },
+    { "stage": "AS", "file": "06811f98f605bb52", "entry": "main", "profile": "as_6_6" },
+    { "stage": "MS", "file": "109772a2d84dd757", "entry": "main", "profile": "ms_6_6" },
+    { "stage": "PS", "file": "320e4d577cc61f92", "entry": "mainTransparent", "profile": "ps_6_6" }
+  ]
+}

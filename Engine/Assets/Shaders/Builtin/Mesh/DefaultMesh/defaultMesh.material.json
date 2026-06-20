@@ -1,0 +1,24 @@
+{
+  "name": "DefaultMesh",
+  "domain": "Surface",
+  "passes": [
+    {
+      "passKind": "ZPrepass",
+      "pipeline": "f09836087840b1d2",
+      "preferredVariant": "GraphicsMesh"
+    },
+    {
+      "passKind": "Draw",
+      "pipeline": "cb1dfc9e9ef2bae9",
+      "preferredVariant": "GraphicsMesh"
+    },
+    {
+      "passKind": "Transparent",
+      "pipeline": "70a440da60fc61a5",
+      "preferredVariant": "GraphicsMesh"
+    }
+  ],
+  "parameters": {
+    "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 }
+  }
+}

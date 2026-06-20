@@ -1,0 +1,29 @@
+{
+  "name": "MeshPBRTransparent",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "4263ff3ca807a94c",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "AS",
+      "file": "c04c76a103a8b3ab",
+      "entry": "main",
+      "profile": "as_6_6"
+    },
+    {
+      "stage": "MS",
+      "file": "d9018a90ed8cabcb",
+      "entry": "main",
+      "profile": "ms_6_6"
+    },
+    {
+      "stage": "PS",
+      "file": "b8ef63bac1805290",
+      "entry": "mainTransparent",
+      "profile": "ps_6_6"
+    }
+  ]
+}

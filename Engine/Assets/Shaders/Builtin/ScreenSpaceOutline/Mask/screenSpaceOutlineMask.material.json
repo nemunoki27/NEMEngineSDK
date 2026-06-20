@@ -1,0 +1,16 @@
+{
+  "name": "ScreenSpaceOutlineMask",
+  "domain": "Surface",
+  "passes": [
+    {
+      "passKind": "ScreenSpaceOutlineMask",
+      "pipeline": "7c1d9a4b8e2f6021",
+      "preferredVariant": "GraphicsMesh"
+    },
+    {
+      "passKind": "ScreenSpaceOutlineCoverageMask",
+      "pipeline": "7c1d9a4b8e2f6026",
+      "preferredVariant": "GraphicsMesh"
+    }
+  ]
+}

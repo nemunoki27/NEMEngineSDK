@@ -1,0 +1,6 @@
+{
+  "guid": "7fb5fd89c7103e74",
+  "importer": "nlohmann::json",
+  "type": "RenderPipeline",
+  "version": 1
+}

@@ -1,0 +1,21 @@
+{
+  "name": "FullscreenCopy",
+  "domain": "Fullscreen",
+  "passes": [
+    {
+      "passKind": "Blit",
+      "pipeline": "0ac10387ac2d0367",
+      "preferredVariant": "GraphicsVertex"
+    },
+    {
+      "passKind": "PostProcess",
+      "pipeline": "0ac10387ac2d0367",
+      "preferredVariant": "GraphicsVertex"
+    },
+    {
+      "passKind": "Fullscreen",
+      "pipeline": "0ac10387ac2d0367",
+      "preferredVariant": "GraphicsVertex"
+    }
+  ]
+}

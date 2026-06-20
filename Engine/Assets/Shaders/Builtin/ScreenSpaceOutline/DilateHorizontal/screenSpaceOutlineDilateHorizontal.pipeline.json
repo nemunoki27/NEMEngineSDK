@@ -1,0 +1,10 @@
+{
+  "name": "ScreenSpaceOutlineDilateHorizontalPipeline",
+  "variants": [
+    {
+      "kind": "Compute",
+      "pipelineType": "Compute",
+      "shader": "7c1d9a4b8e2f6014"
+    }
+  ]
+}

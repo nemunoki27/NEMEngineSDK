@@ -1,0 +1,17 @@
+{
+  "name": "ReflectionRaytracingPipeline",
+  "variants": [
+    {
+      "kind": "Raytracing",
+      "shader": "da1b7b9bf8074052",
+      "requiresDispatchRays": true,
+      "rayGenerationExport": "ReflectionRayGen",
+      "missExport": "ReflectionMiss",
+      "closestHitExport": "ReflectionClosestHit",
+      "hitGroupExport": "ReflectionHitGroup",
+      "maxPayloadSizeInBytes": 16,
+      "maxAttributeSizeInBytes": 8,
+      "maxRecursionDepth": 1
+    }
+  ]
+}

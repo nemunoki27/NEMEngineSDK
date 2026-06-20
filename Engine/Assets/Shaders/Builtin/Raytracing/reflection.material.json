@@ -1,0 +1,11 @@
+{
+  "name": "ReflectionRaytracingMaterial",
+  "domain": "Surface",
+  "passes": [
+    {
+      "passKind": "Reflection",
+      "pipeline": "6228d203578ecde2",
+      "preferredVariant": "Raytracing"
+    }
+  ]
+}

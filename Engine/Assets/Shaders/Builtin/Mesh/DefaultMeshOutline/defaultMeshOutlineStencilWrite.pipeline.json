@@ -1,0 +1,76 @@
+{
+  "name": "DefaultMeshOutlineStencilWritePipeline",
+  "variants": [
+    {
+      "kind": "GraphicsMesh",
+      "pipelineType": "Mesh",
+      "shader": "0758ab98e7671f44",
+      "numRenderTargets": 0,
+      "dynamicRenderTargetFormats": false,
+      "dsvFormat": "DXGI_FORMAT_UNKNOWN",
+      "topologyType": "D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE",
+      "requiresMeshShader": true,
+      "rasterizer": {
+        "fillMode": "D3D12_FILL_MODE_SOLID",
+        "cullMode": "D3D12_CULL_MODE_BACK",
+        "frontCounterClockwise": false,
+        "depthClipEnable": true
+      },
+      "depthStencil": {
+        "depthEnable": true,
+        "depthWriteMask": "D3D12_DEPTH_WRITE_MASK_ZERO",
+        "depthFunc": "D3D12_COMPARISON_FUNC_LESS_EQUAL",
+        "stencilEnable": true,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "frontFace": {
+          "stencilFailOp": "D3D12_STENCIL_OP_KEEP",
+          "stencilDepthFailOp": "D3D12_STENCIL_OP_KEEP",
+          "stencilPassOp": "D3D12_STENCIL_OP_REPLACE",
+          "stencilFunc": "D3D12_COMPARISON_FUNC_ALWAYS"
+        },
+        "backFace": {
+          "stencilFailOp": "D3D12_STENCIL_OP_KEEP",
+          "stencilDepthFailOp": "D3D12_STENCIL_OP_KEEP",
+          "stencilPassOp": "D3D12_STENCIL_OP_REPLACE",
+          "stencilFunc": "D3D12_COMPARISON_FUNC_ALWAYS"
+        }
+      }
+    },
+    {
+      "kind": "GraphicsVertex",
+      "pipelineType": "Vertex",
+      "shader": "0758ab98e7671f44",
+      "numRenderTargets": 0,
+      "dynamicRenderTargetFormats": false,
+      "dsvFormat": "DXGI_FORMAT_UNKNOWN",
+      "topologyType": "D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE",
+      "rasterizer": {
+        "fillMode": "D3D12_FILL_MODE_SOLID",
+        "cullMode": "D3D12_CULL_MODE_BACK",
+        "frontCounterClockwise": false,
+        "depthClipEnable": true
+      },
+      "depthStencil": {
+        "depthEnable": true,
+        "depthWriteMask": "D3D12_DEPTH_WRITE_MASK_ZERO",
+        "depthFunc": "D3D12_COMPARISON_FUNC_LESS_EQUAL",
+        "stencilEnable": true,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "frontFace": {
+          "stencilFailOp": "D3D12_STENCIL_OP_KEEP",
+          "stencilDepthFailOp": "D3D12_STENCIL_OP_KEEP",
+          "stencilPassOp": "D3D12_STENCIL_OP_REPLACE",
+          "stencilFunc": "D3D12_COMPARISON_FUNC_ALWAYS"
+        },
+        "backFace": {
+          "stencilFailOp": "D3D12_STENCIL_OP_KEEP",
+          "stencilDepthFailOp": "D3D12_STENCIL_OP_KEEP",
+          "stencilPassOp": "D3D12_STENCIL_OP_REPLACE",
+          "stencilFunc": "D3D12_COMPARISON_FUNC_ALWAYS"
+        }
+      }
+    }
+  ]
+}

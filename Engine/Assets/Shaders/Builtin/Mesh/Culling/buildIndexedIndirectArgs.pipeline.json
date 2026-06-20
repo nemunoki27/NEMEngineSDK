@@ -1,0 +1,10 @@
+{
+  "name": "BuildIndexedIndirectArgsPipeline",
+  "variants": [
+    {
+      "kind": "Compute",
+      "pipelineType": "Compute",
+      "shader": "35fa240c36c33593"
+    }
+  ]
+}

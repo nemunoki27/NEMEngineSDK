@@ -1,0 +1,26 @@
+{
+  "name": "ScreenSpaceOutlineCompositePipeline",
+  "variants": [
+    {
+      "kind": "GraphicsVertex",
+      "pipelineType": "Vertex",
+      "shader": "7c1d9a4b8e2f6013",
+      "numRenderTargets": 1,
+      "dynamicRenderTargetFormats": true,
+      "dsvFormat": "DXGI_FORMAT_UNKNOWN",
+      "topologyType": "D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE",
+      "rasterizer": {
+        "fillMode": "D3D12_FILL_MODE_SOLID",
+        "cullMode": "D3D12_CULL_MODE_NONE",
+        "frontCounterClockwise": false,
+        "depthClipEnable": true
+      },
+      "depthStencil": {
+        "depthEnable": false,
+        "depthWriteMask": "D3D12_DEPTH_WRITE_MASK_ZERO",
+        "depthFunc": "D3D12_COMPARISON_FUNC_ALWAYS",
+        "stencilEnable": false
+      }
+    }
+  ]
+}

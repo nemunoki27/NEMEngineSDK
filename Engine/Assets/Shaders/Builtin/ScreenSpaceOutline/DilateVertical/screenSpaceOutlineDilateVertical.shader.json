@@ -1,0 +1,11 @@
+{
+  "name": "ScreenSpaceOutlineDilateVertical",
+  "stages": [
+    {
+      "stage": "CS",
+      "file": "b65f9365ab600b60",
+      "entry": "main",
+      "profile": "cs_6_0"
+    }
+  ]
+}

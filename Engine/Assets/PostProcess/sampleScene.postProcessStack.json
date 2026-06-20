@@ -1,0 +1,19 @@
+{
+    "passes": [
+        {
+            "enabled": true,
+            "id": "dbca16c553c729b2",
+            "materialGuid": "d4585b4b3c65da40",
+            "name": "bloom",
+            "parameters": {
+                "intensity": 3.5299999713897705,
+                "radius": 20,
+                "sigma": 128.0,
+                "threshold": 1.7699999809265137
+            },
+            "passKind": "PostProcess",
+            "textures": {}
+        }
+    ],
+    "version": 1
+}

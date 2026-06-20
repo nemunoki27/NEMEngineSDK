@@ -1,0 +1,11 @@
+{
+  "name": "DefaultText",
+  "domain": "UI",
+  "passes": [
+    {
+      "passKind": "Draw",
+      "pipeline": "be890ab815b3de9a",
+      "preferredVariant": "GraphicsVertex"
+    }
+  ]
+}

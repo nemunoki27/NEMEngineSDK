@@ -1,0 +1,29 @@
+{
+  "name": "DefaultMeshOutline",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "567082a5b15381f8",
+      "entry": "main",
+      "profile": "vs_6_6"
+    },
+    {
+      "stage": "AS",
+      "file": "fec376a19b3c8aaf",
+      "entry": "main",
+      "profile": "as_6_6"
+    },
+    {
+      "stage": "MS",
+      "file": "afdb2923cee11c87",
+      "entry": "main",
+      "profile": "ms_6_6"
+    },
+    {
+      "stage": "PS",
+      "file": "c2dda2facfdd0afe",
+      "entry": "main",
+      "profile": "ps_6_6"
+    }
+  ]
+}

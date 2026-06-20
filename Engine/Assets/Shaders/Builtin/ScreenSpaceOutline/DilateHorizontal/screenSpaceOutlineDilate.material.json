@@ -1,0 +1,16 @@
+{
+  "name": "ScreenSpaceOutlineDilate",
+  "domain": "Compute",
+  "passes": [
+    {
+      "passKind": "ScreenSpaceOutlineDilateHorizontal",
+      "pipeline": "7c1d9a4b8e2f6024",
+      "preferredVariant": "Compute"
+    },
+    {
+      "passKind": "ScreenSpaceOutlineDilateVertical",
+      "pipeline": "7c1d9a4b8e2f6025",
+      "preferredVariant": "Compute"
+    }
+  ]
+}

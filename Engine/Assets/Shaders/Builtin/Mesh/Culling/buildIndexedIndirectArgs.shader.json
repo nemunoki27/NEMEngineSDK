@@ -1,0 +1,11 @@
+{
+  "name": "BuildIndexedIndirectArgs",
+  "stages": [
+    {
+      "stage": "CS",
+      "file": "9931db792b1bbcb9",
+      "entry": "main",
+      "profile": "cs_6_0"
+    }
+  ]
+}

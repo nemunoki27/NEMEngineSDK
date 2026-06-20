@@ -1,0 +1,29 @@
+{
+  "name": "DefaultMeshZPrepass",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "9bd7d97c57ff6422",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "AS",
+      "file": "77f3dc56df93e2d7",
+      "entry": "main",
+      "profile": "as_6_6"
+    },
+    {
+      "stage": "MS",
+      "file": "b682d08b93a751bf",
+      "entry": "main",
+      "profile": "ms_6_6"
+    },
+    {
+      "stage": "PS",
+      "file": "d73e4201619d8fc3",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ScreenSpaceOutlineComposite",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "9a984d1fab55b1cb",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "PS",
+      "file": "c532b403a5fabaff",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}

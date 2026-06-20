@@ -1,0 +1,17 @@
+{
+  "name": "DefaultText",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "e8d7a5d5e72fb5b4",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "PS",
+      "file": "3090ee0d0bb9d7d4",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}

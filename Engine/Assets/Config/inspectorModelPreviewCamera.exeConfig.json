@@ -1,0 +1,19 @@
+{
+    "panSpeed": 0.019999999552965164,
+    "perspectiveCullingMask": -1,
+    "perspectiveFarClip": 8000.0,
+    "perspectiveFovY": 30.939720153808594,
+    "perspectiveNearClip": 0.10000000149011612,
+    "rotateSpeed": 0.004999999888241291,
+    "transform3D.pos": {
+        "x": -6.800000190734863,
+        "y": 2.5199999809265137,
+        "z": -8.1899995803833
+    },
+    "transform3D.rotation": {
+        "x": 13.75,
+        "y": 37.79999923706055,
+        "z": 0.0
+    },
+    "zoomRate": 0.4000000059604645
+}

@@ -1,0 +1,17 @@
+{
+  "name": "FullscreenCopy",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "aeca9b3bd9861abf",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "PS",
+      "file": "dd7c51406197fad5",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}

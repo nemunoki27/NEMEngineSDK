@@ -1,0 +1,16 @@
+{
+  "name": "ToneMapToView",
+  "domain": "Fullscreen",
+  "passes": [
+    {
+      "passKind": "Blit",
+      "pipeline": "c3756f797ab0f489",
+      "preferredVariant": "GraphicsVertex"
+    },
+    {
+      "passKind": "Fullscreen",
+      "pipeline": "c3756f797ab0f489",
+      "preferredVariant": "GraphicsVertex"
+    }
+  ]
+}

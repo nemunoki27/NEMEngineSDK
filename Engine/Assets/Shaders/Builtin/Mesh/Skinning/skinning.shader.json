@@ -1,0 +1,11 @@
+{
+  "name": "SkinningCompute",
+  "stages": [
+    {
+      "stage": "CS",
+      "file": "f994162f81f91a4d",
+      "entry": "main",
+      "profile": "cs_6_0"
+    }
+  ]
+}

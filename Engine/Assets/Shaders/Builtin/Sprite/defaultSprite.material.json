@@ -1,0 +1,11 @@
+{
+  "name": "DefaultSprite",
+  "domain": "UI",
+  "passes": [
+    {
+      "passKind": "Draw",
+      "pipeline": "3309336c2fa4669c",
+      "preferredVariant": "GraphicsVertex"
+    }
+  ]
+}

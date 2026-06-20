@@ -1,0 +1,30 @@
+{
+  "name": "MeshPBR",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "f6485468f3b0f105",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "AS",
+      "file": "06811f98f605bb52",
+      "entry": "main",
+      "profile": "as_6_6"
+    },
+    {
+      "stage": "MS",
+      "file": "109772a2d84dd757",
+      "entry": "main",
+      "profile": "ms_6_6"
+    },
+    {
+      "stage": "PS",
+      "file": "2b5e427ce09053d5",
+      "entry": "main",
+      "profile": "ps_6_6"
+    }
+  ],
+  "colorParameters": [ "color", "emissiveColor" ]
+}

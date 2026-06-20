@@ -1,0 +1,6 @@
+{
+  "guid": "421a1287b7323a99",
+  "importer": "nlohmann::json",
+  "type": "PostProcessStack",
+  "version": 1
+}

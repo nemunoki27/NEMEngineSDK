@@ -1,0 +1,10 @@
+{
+  "name": "SkinningPipeline",
+  "variants": [
+    {
+      "kind": "Compute",
+      "pipelineType": "Compute",
+      "shader": "fb47aaa94e49cfa0"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "DefaultSprite",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "54837bc26b01ce62",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "PS",
+      "file": "abe45545f515d014",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}
