@@ -28,8 +28,8 @@
                 "size": 64.0
             },
             "translate3D": {
-                "absolute": true,
-                "size": 1.0
+                "absolute": false,
+                "size": 2.009999990463257
             }
         }
     }
