@@ -32,7 +32,7 @@ struct MeshOutlineGPUData {
 	uint flags;
 	uint _pad0;
 };
-// 既存割り当て(t0-t5,t9 space1)と衝突しない番号を使用する
+// 既存割り当てと衝突しない番号を使う
 StructuredBuffer<MeshOutlineGPUData> gMeshOutlines : register(t7, space1);
 
 struct OutlineVertexOutput {
@@ -44,7 +44,7 @@ struct OutlineVertexOutput {
 //============================================================================
 //	functions
 //============================================================================
-// Outline Samplerによる部位別アウトライン幅の乗数を取得する。VS/MSではSampleLevelを使う
+// 部位別アウトライン幅の乗数を取得する、VS/MSではSampleLevelを使う
 float SampleOutlineWidthMultiplier(MeshOutlineGPUData outline, float2 uv) {
 
 	if ((outline.flags & MESH_OUTLINE_FLAG_USE_OUTLINE_SAMPLER) == 0u ||
@@ -57,7 +57,7 @@ float SampleOutlineWidthMultiplier(MeshOutlineGPUData outline, float2 uv) {
 	return saturate(tex.SampleLevel(gOutlineSampler, uv, 0.0f).r);
 }
 
-// Baked Normal Textureがあればそれを、なければ頂点法線を返す。object/local空間normalを想定する
+// Baked Normalがあればそれを、なければ頂点法線を返す
 float3 ResolveOutlineLocalNormal(MeshOutlineGPUData outline, MeshVertex vertex) {
 
 	if ((outline.flags & MESH_OUTLINE_FLAG_USE_BAKED_NORMAL) == 0u ||
@@ -72,7 +72,7 @@ float3 ResolveOutlineLocalNormal(MeshOutlineGPUData outline, MeshVertex vertex) 
 	return normalize(normal);
 }
 
-// Camera Z Offset。カメラからワールド頂点へ向かう方向へ押し込む
+// カメラから頂点へ向かう方向へ押し込むCamera Z Offset
 float3 ApplyOutlineCameraZOffset(float3 worldPos, float cameraZOffset) {
 
 	float3 fromCamera = worldPos - renderCameraPos;
@@ -83,7 +83,7 @@ float3 ApplyOutlineCameraZOffset(float3 worldPos, float cameraZOffset) {
 	return worldPos + fromCamera / len * cameraZOffset;
 }
 
-// ScreenPixels膨張。clip/NDC上でXY offsetを加えて画面上の線幅を一定にする
+// clip上でXY offsetを加えて画面上の線幅を一定にする
 float4 ApplyScreenPixelOutlineOffset(float3 worldPos, float3 worldDirection, float widthPixels) {
 
 	float4 clip = mul(float4(worldPos, 1.0f), viewProjection);
@@ -124,7 +124,7 @@ float4 ApplyScreenPixelOutlineOffset(float3 worldPos, float3 worldDirection, flo
 	return clip;
 }
 
-// VS/MS共通の膨張頂点生成。両経路で完全に同じロジックを使う
+// VS/MS共通の膨張頂点生成
 OutlineVertexOutput BuildOutlineVertex(uint instanceID, uint localSubMeshIndex,
 	MeshVertex vertex, float4x4 worldMatrix, float4x4 normalMatrix) {
 
@@ -157,8 +157,7 @@ OutlineVertexOutput BuildOutlineVertex(uint instanceID, uint localSubMeshIndex,
 	OutlineVertexOutput output;
 	if (outline.widthMode == OUTLINE_WIDTH_SCREEN_PIXELS) {
 
-		// NormalDirectionは法線方向なのでnormalMatrix、
-		// PositionScalingは位置ベクトル方向なのでworldMatrixの線形部で変換する
+		// 法線方向はnormalMatrix、位置方向はworldMatrixの線形部で変換する
 		float3 worldDirection;
 		if (outline.expansionMode == OUTLINE_EXPANSION_NORMAL_DIRECTION) {
 			worldDirection = TransformMeshNormalToWorld(localDirection, normalMatrix);

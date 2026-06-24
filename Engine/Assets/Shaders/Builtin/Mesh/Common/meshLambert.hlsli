@@ -3,9 +3,6 @@
 
 //============================================================================
 //	ハーフランバート系の共有ライティング
-//	defaultMesh.hlsli と meshLighting.hlsli をincludeしてから読むこと
-//	影無しのdefaultMeshLambertと影有りのRayQueryShadow版の両PSで共有する
-//	平行光源のシャドウ有無だけPS側で差し替え、点/スポット/ベースカラーはここを使う
 //============================================================================
 
 // N・Lを0..1へ寄せて2乗する、影側も緩く照らすトゥーン寄りの拡散
@@ -69,8 +66,7 @@ float3 EvaluateLambertSpot(SpotLight light, float3 worldPos, float3 N) {
 	return lambert * light.color.rgb * light.intensity * distanceAttenuation * coneAttenuation;
 }
 
-// 点光源/スポットライトを全ライト直接集計する、平行光源はPS側で足す
-// ライトカリング廃止に伴い、タイル/クラスタ参照はやめて全ライトをループする
+// 点光源とスポットライトを全ライト集計する、平行光源はPS側で足す
 float3 AccumulateLocalLambertLighting(float3 worldPos, float3 N) {
 
 	float3 lit = 0.0f.xxx;

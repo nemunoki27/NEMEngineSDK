@@ -15,7 +15,7 @@ struct VSOutput {
 	float3 worldPos : WORLDPOS0;
 	uint instanceID : INSTANCEID0;
 	uint subMeshIndex : SUBMESHINDEX0;
-	// 接線の利き手と、Transformの向き(mirror)符号。PS側のTBN構築で使う
+	// PS側のTBN構築で使う接線符号と向き符号
 	float tangentSign : TANGENTSIGN0;
 	float orientationSign : ORIENTATIONSIGN0;
 };
@@ -67,9 +67,7 @@ cbuffer MeshDrawConstants : register(b0, space1) {
 	uint outlineHasScreenPixelWidth;
 	uint3 _meshDrawReserved1;
 };
-// MeshVertex / MeshPackedVertex / MeshletDrawDesc / MeshletBounds /
-// SubMeshShaderData / MeshInstance / MESH_INSTANCE_FLAG_SKINNED は
-// meshShaderSharedTypes.hlsli へ集約済み(同じstructをここへコピーしない)
+// 共有GPU構造体はmeshShaderSharedTypes.hlsliへ集約済み
 
 struct MeshDispatchPayload {
 
@@ -110,8 +108,7 @@ float4x4 GetInstanceSubMeshWorldMatrix(uint instanceID, uint localSubMeshIndex) 
 	return mul(subMesh.localMatrix, instance.worldMatrix);
 }
 
-// 法線変換行列。位置用worldMatrixと同じ合成順(local→world)で法線行列を合成する
-// CPUで transpose(inverse(...)) を構築済みなので、ここでinverseは呼ばない
+// 法線変換行列を合成する、CPUで構築済みなのでinverseは呼ばない
 float4x4 GetInstanceSubMeshNormalMatrix(uint instanceID, uint localSubMeshIndex) {
 
 	MeshInstance instance = gMeshInstances[instanceID];
@@ -120,7 +117,7 @@ float4x4 GetInstanceSubMeshNormalMatrix(uint instanceID, uint localSubMeshIndex)
 	return mul(subMesh.localNormalMatrix, instance.normalMatrix);
 }
 
-// Transformの向き(mirror)符号。負スケールが奇数個あると-1になり、従法線の向き補正に使う
+// 負スケールが奇数個で-1になる向き符号、従法線の向き補正に使う
 float GetInstanceSubMeshOrientationSign(uint instanceID, uint localSubMeshIndex) {
 
 	MeshInstance instance = gMeshInstances[instanceID];
@@ -129,13 +126,13 @@ float GetInstanceSubMeshOrientationSign(uint instanceID, uint localSubMeshIndex)
 	return instance.orientationSign * subMesh.localOrientationSign;
 }
 
-// 法線をワールドへ変換する。法線方向は必ずnormalMatrix(inverse-transpose)を使う
+// 法線をワールドへ変換する、向きはnormalMatrixを使う
 float3 TransformMeshNormalToWorld(float3 localNormal, float4x4 normalMatrix) {
 
 	return normalize(mul(localNormal, (float3x3) normalMatrix));
 }
 
-// 接線をワールドへ変換する。接線は位置ベクトルと同じ向きなのでworldMatrixの線形部を使う
+// 接線をワールドへ変換する、位置と同じworldMatrixの線形部を使う
 float3 TransformMeshTangentToWorld(float3 localTangent, float4x4 worldMatrix) {
 
 	return normalize(mul(localTangent, (float3x3) worldMatrix));
@@ -147,7 +144,7 @@ float3 BuildMeshBitangent(float3 worldNormal, float3 worldTangent, float tangent
 	return cross(worldNormal, worldTangent) * (tangentSign * orientationSign);
 }
 
-// PS共通のTBN行列を構築する。tangentSignとorientationSignで従法線の向きを補正する
+// PS共通のTBN行列を構築する、tangentSignとorientationSignで従法線の向きを補正する
 float3x3 BuildMeshTBN(VSOutput input) {
 
 	float3 N = normalize(input.normal);
@@ -335,8 +332,7 @@ bool IsMeshletVisible(uint meshletIndex, uint instanceIndex) {
 	return true;
 }
 
-// VS経路のVSOutputを構築する。Forward/Transparent/RayQueryShadow系で共通の頂点処理なのでここへ集約する
-// 依存する関数やリソースが出揃った末尾で定義する
+// VS経路のVSOutputを構築する、各PS系で共通の頂点処理
 VSOutput BuildMeshSurfaceVertex(uint vertexID, uint instanceID) {
 
 	MeshVertex vertex = LoadMeshVertex(instanceID, vertexID);

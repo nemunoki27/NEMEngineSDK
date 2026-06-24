@@ -19,8 +19,8 @@ static const float4 kPositions[kNumVertex] = {
 VSOutput main(uint vertexID : SV_VertexID) {
 
 	VSOutput output;
-	
-	// 頂点IDに基づいて、フルスクリーン三角形の頂点位置を設定
+
+	// フルスクリーン三角形の頂点位置
 	output.position = kPositions[vertexID];
 
 	return output;

@@ -13,12 +13,10 @@ SamplerState gSampler : register(s0);
 //	main
 //============================================================================
 float4 main(VSOutput input) : SV_TARGET0 {
-	
+
 	float4 output;
 
-	// テクスチャサンプリング
 	output = gTexture.Sample(gSampler, input.texcoord);
-	// アルファ値を1.0fに設定
 	output.a = 1.0f;
 	return output;
 }

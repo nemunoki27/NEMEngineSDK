@@ -1,0 +1,11 @@
+{
+  "name": "DefaultLine",
+  "domain": "Surface",
+  "passes": [
+    {
+      "passKind": "Draw",
+      "pipeline": "7a9d3c5e1b6f4083",
+      "preferredVariant": "GraphicsGeometry"
+    }
+  ]
+}

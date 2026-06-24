@@ -1,0 +1,97 @@
+//============================================================================
+//	include
+//============================================================================
+#include "lineGeometry.hlsli"
+
+//============================================================================
+//	resources
+//============================================================================
+cbuffer ViewConstants : register(b0) {
+
+	float4x4 viewMatrix;
+	float4x4 projectionMatrix;
+
+	float2 viewportSize;
+	float nearClip;
+	float feather;
+};
+
+//============================================================================
+//	main
+//============================================================================
+[maxvertexcount(4)]
+void main(line VSOutput input[2], inout TriangleStream<GSOutput> triStream) {
+
+	float3 view0 = mul(float4(input[0].position, 1.0f), viewMatrix).xyz;
+	float3 view1 = mul(float4(input[1].position, 1.0f), viewMatrix).xyz;
+
+	float4 clip0 = mul(float4(view0, 1.0f), projectionMatrix);
+	float4 clip1 = mul(float4(view1, 1.0f), projectionMatrix);
+
+	float w0 = max(abs(clip0.w), 1e-6f);
+	float w1 = max(abs(clip1.w), 1e-6f);
+
+	float2 ndc0 = clip0.xy / w0;
+	float2 ndc1 = clip1.xy / w1;
+
+	// スクリーン空間で線方向と法線を決める、これで向きが安定する
+	float2 pixelScale = max(viewportSize * 0.5f, float2(1.0f, 1.0f));
+	float2 screen0 = ndc0 * pixelScale;
+	float2 screen1 = ndc1 * pixelScale;
+
+	float2 direction = screen1 - screen0;
+	float lenSq = dot(direction, direction);
+	if (lenSq < 1e-8f) {
+		return;
+	}
+	direction = normalize(direction);
+	float2 normal = float2(-direction.y, direction.x);
+
+	float safeFeather = max(feather, 0.5f);
+
+	// ワールド単位半幅をその深度でのピクセル幅へ変換する、縦横比に依らず等方
+	float pixelsPerWorldUnit = (viewportSize.y * 0.5f) * projectionMatrix[1][1];
+	float halfWidth0 = max(input[0].thickness, 0.001f) * 0.5f * pixelsPerWorldUnit / w0;
+	float halfWidth1 = max(input[1].thickness, 0.001f) * 0.5f * pixelsPerWorldUnit / w1;
+
+	// AA用フェザーはスクリーン一定で太線と同じ品質にする
+	float outerHalfWidth0 = halfWidth0 + safeFeather;
+	float outerHalfWidth1 = halfWidth1 + safeFeather;
+
+	float2 offsetPx0 = normal * outerHalfWidth0;
+	float2 offsetPx1 = normal * outerHalfWidth1;
+
+	float2 ndcOffset0 = float2(offsetPx0.x / pixelScale.x, offsetPx0.y / pixelScale.y);
+	float2 ndcOffset1 = float2(offsetPx1.x / pixelScale.x, offsetPx1.y / pixelScale.y);
+
+	float2 clipOffset0 = ndcOffset0 * clip0.w;
+	float2 clipOffset1 = ndcOffset1 * clip1.w;
+
+	GSOutput v;
+
+	v.color = input[0].color;
+	v.worldPos = input[0].position;
+	v.side = +1.0f;
+	v.halfWidth = halfWidth0;
+	v.outerHalfWidth = outerHalfWidth0;
+	v.position = float4(clip0.x + clipOffset0.x, clip0.y + clipOffset0.y, clip0.z, clip0.w);
+	triStream.Append(v);
+
+	v.side = -1.0f;
+	v.position = float4(clip0.x - clipOffset0.x, clip0.y - clipOffset0.y, clip0.z, clip0.w);
+	triStream.Append(v);
+
+	v.color = input[1].color;
+	v.worldPos = input[1].position;
+	v.side = +1.0f;
+	v.halfWidth = halfWidth1;
+	v.outerHalfWidth = outerHalfWidth1;
+	v.position = float4(clip1.x + clipOffset1.x, clip1.y + clipOffset1.y, clip1.z, clip1.w);
+	triStream.Append(v);
+
+	v.side = -1.0f;
+	v.position = float4(clip1.x - clipOffset1.x, clip1.y - clipOffset1.y, clip1.z, clip1.w);
+	triStream.Append(v);
+
+	triStream.RestartStrip();
+}

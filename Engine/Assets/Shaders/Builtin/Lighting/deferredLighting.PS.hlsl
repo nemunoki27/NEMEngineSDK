@@ -11,19 +11,20 @@ static const float PI = 3.14159265f;
 
 //============================================================================
 //	GBuffer入力
-//	SceneMainのcolorアタッチメント並びと一致させる、worldPosはGBufferから直接読む
 //============================================================================
-Texture2D<float4> gAlbedo   : register(t0);
-Texture2D<float4> gNormal   : register(t1);
+Texture2D<float4> gAlbedo : register(t0);
+Texture2D<float4> gNormal : register(t1);
 Texture2D<float4> gWorldPos : register(t2);
 Texture2D<float4> gMaterial : register(t3);
 Texture2D<float4> gEmissive : register(t4);
-Texture2D<uint>   gFlags    : register(t5);
+Texture2D<uint> gFlags : register(t5);
+
+SamplerState gSampler : register(s0);
 
 //============================================================================
 //	ライト
-//	構造体レイアウトはGPUアップロード側と一致させる、meshLighting.hlsliと同一定義
 //============================================================================
+// 平行光源
 struct DirectionalLight {
 
 	float4 color;
@@ -34,6 +35,7 @@ struct DirectionalLight {
 	float shadowStrength;
 	float3 _pad1;
 };
+// 点光源
 struct PointLight {
 
 	float4 color;
@@ -45,6 +47,7 @@ struct PointLight {
 	float decay;
 	float2 _pad0;
 };
+// スポットライト
 struct SpotLight {
 
 	float4 color;
@@ -60,7 +63,7 @@ struct SpotLight {
 	float cosFalloffStart;
 	float _pad0;
 };
-
+// ライト数
 cbuffer LightCounts : register(b0) {
 
 	uint directionalCount;
@@ -74,8 +77,8 @@ StructuredBuffer<SpotLight> gSpotLights : register(t8);
 
 //============================================================================
 //	ライティングパス定数
-//	背景skyboxの復元と環境光に使う
 //============================================================================
+
 cbuffer DeferredLightingConstants : register(b1) {
 
 	float3 cameraPos;
@@ -94,17 +97,16 @@ cbuffer DeferredLightingConstants : register(b1) {
 	float2 _shadowPad;
 };
 
-SamplerState gSampler : register(s0);
-
+// 無効キューブマップインデックス
 static const uint kNoCubemap = 0xFFFFFFFF;
 
 //============================================================================
-//	InlineRayQueryによる平行光源シャドウ
-//	LightingPassがTLASとinlineRTを使えるときだけmainShadowedを選び、ここを通る
+//	平行光源影
 //============================================================================
+
 RaytracingAccelerationStructure gSceneTLAS : register(t10);
 
-// サーフェスから平行光源方向へシャドウレイを飛ばし、遮蔽されていればtrueを返す
+// 平行光源方向へシャドウレイを飛ばして遮蔽判定
 bool TraceDirectionalShadow(float3 worldPos, float3 worldNormal, float3 lightDirection) {
 
 	RayDesc rayDesc;
@@ -123,8 +125,9 @@ bool TraceDirectionalShadow(float3 worldPos, float3 worldNormal, float3 lightDir
 
 //============================================================================
 //	PBR関数
-//	meshPBR.PSと同じBRDF、Deferred側で共有せず独立に持つ
 //============================================================================
+
+// hlsl魔導書PBR参照
 float EvalD(float NdotH, float roughness) {
 
 	float a = roughness * roughness;
@@ -132,24 +135,20 @@ float EvalD(float NdotH, float roughness) {
 	float denom = NdotH * NdotH * (a2 - 1.0f) + 1.0f;
 	return a2 / max(PI * denom * denom, 1e-7f);
 }
-
 float EvalG1(float NdotX, float roughness) {
 
 	float r = roughness + 1.0f;
 	float k = (r * r) / 8.0f;
 	return NdotX / max(NdotX * (1.0f - k) + k, 1e-7f);
 }
-
 float EvalG(float NdotV, float NdotL, float roughness) {
 
 	return EvalG1(NdotV, roughness) * EvalG1(NdotL, roughness);
 }
-
 float3 FresnelSchlick(float cosTheta, float3 F0) {
 
 	return F0 + (1.0f - F0) * pow(saturate(1.0f - cosTheta), 5.0f);
 }
-
 float3 DisneyDiffuse(float NdotL, float NdotV, float LdotH, float roughness, float3 albedo) {
 
 	float energyBias = lerp(0.0f, 0.5f, roughness);
@@ -159,7 +158,6 @@ float3 DisneyDiffuse(float NdotL, float NdotV, float LdotH, float roughness, flo
 	float FV = 1.0f + (Fd90 - 1.0f) * pow(1.0f - NdotV, 5.0f);
 	return albedo * FL * FV * energyFactor / PI;
 }
-
 float ComputeDistanceAttenuation(float dist, float range, float decay) {
 
 	if (range <= 0.0001f || dist >= range) {
@@ -175,8 +173,6 @@ float ComputeDistanceAttenuation(float dist, float range, float decay) {
 
 	return smooth * distanceFalloff;
 }
-
-// 1ライト分のCook-Torranceを評価する、方向Lと放射輝度radianceは呼び出し側で用意する
 float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 radiance,
 	float3 albedo, float metallic, float roughness, float3 F0) {
 
@@ -203,38 +199,39 @@ float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 radiance,
 }
 
 //============================================================================
-//	背景
-//	ジオメトリが無い画素はskyboxを引く、未設定なら指定色を返す
+//	背景、スカイボックス
 //============================================================================
+
 float3 SampleBackground(float2 texcoord) {
 
+	// スカイボックスが無効なら処理しない、色をそのまま返す
 	if (hasSkybox == 0u || skyboxCubemapIndex == kNoCubemap) {
 		return skyboxColor.rgb;
 	}
 
-	// texcoordからNDCを作りinverseViewProjectionでワールド方向を復元する
+	// 入力テクスチャ座標からNDCを作ってinverseViewProjectionでワールド方向を復元
 	float2 ndc = float2(texcoord.x * 2.0f - 1.0f, 1.0f - texcoord.y * 2.0f);
 	float4 worldFar = mul(float4(ndc, 1.0f, 1.0f), inverseViewProjection);
-	float3 dir = normalize(worldFar.xyz / worldFar.w - cameraPos);
+	float3 direction = normalize(worldFar.xyz / worldFar.w - cameraPos);
 
+	// キューブマップテクスチャ取得
 	TextureCube<float4> cubemap = ResourceDescriptorHeap[NonUniformResourceIndex(skyboxCubemapIndex)];
-	return cubemap.SampleLevel(gSampler, dir, 0.0f).rgb * skyboxColor.rgb;
+	return cubemap.SampleLevel(gSampler, direction, 0.0f).rgb * skyboxColor.rgb;
 }
 
 //============================================================================
-//	ResolvePixel
-//	GBufferを読み全ライトをPBRで合算する、useShadowで平行光源のシャドウ有無を切り替える
+//	全ピクセルのマテリアル計算
 //============================================================================
 float4 ResolvePixel(VSOutput input, bool useShadow) {
 
 	int3 pixel = int3(input.position.xy, 0);
 
-	// サーフェスが無い画素は背景として描く
+	// サーフェスが無いピクセルは背景
 	uint flags = gFlags.Load(pixel);
 	if ((flags & kMaterialFlagSurface) == 0u) {
 		return float4(SampleBackground(input.texcoord), 1.0f);
 	}
-
+	// GBufferデータ取得
 	float3 albedo = gAlbedo.Load(pixel).rgb;
 	float3 N = normalize(gNormal.Load(pixel).xyz * 2.0f - 1.0f);
 	float3 worldPos = gWorldPos.Load(pixel).xyz;
@@ -249,21 +246,21 @@ float4 ResolvePixel(VSOutput input, bool useShadow) {
 
 	float3 Lo = 0.0f.xxx;
 
-	// 平行光源、useShadow時はTLASへシャドウレイを飛ばして遮蔽を反映する
+	// 平行光源
 	[loop]
 	for (uint di = 0; di < directionalCount; ++di) {
 
 		DirectionalLight light = gDirectionalLights[di];
 		float3 L = normalize(-light.direction);
+		// 影計算を行うか、行わない場合は1.0fでそのまま返す
 		float shadow = 1.0f;
 		if (useShadow) {
-			shadow = TraceDirectionalShadow(worldPos, N, light.direction) ?
-				(1.0f - light.shadowStrength) : 1.0f;
+			
+			shadow = TraceDirectionalShadow(worldPos, N, light.direction) ? (1.0f - light.shadowStrength) : 1.0f;
 		}
 		float3 radiance = light.color.rgb * light.intensity * shadow;
 		Lo += EvaluatePBRLight(N, V, L, radiance, albedo, metallic, roughness, F0);
 	}
-
 	// 点光源
 	[loop]
 	for (uint pi = 0; pi < pointCount; ++pi) {
@@ -282,7 +279,6 @@ float4 ResolvePixel(VSOutput input, bool useShadow) {
 		float3 radiance = light.color.rgb * light.intensity * attenuation;
 		Lo += EvaluatePBRLight(N, V, L, radiance, albedo, metallic, roughness, F0);
 	}
-
 	// スポットライト
 	[loop]
 	for (uint si = 0; si < spotCount; ++si) {
@@ -318,15 +314,15 @@ float4 ResolvePixel(VSOutput input, bool useShadow) {
 }
 
 //============================================================================
-//	main / mainShadowed
-//	mainはシャドウ無し、mainShadowedはTLASによる平行光源シャドウ付き
-//	LightingPassがTLASとinlineRTの可否で2つのPSOを使い分ける
+//	main、影無し
 //============================================================================
 float4 main(VSOutput input) : SV_TARGET0 {
 
 	return ResolvePixel(input, false);
 }
-
+//============================================================================
+//	mainShadowed、影あり
+//============================================================================
 float4 mainShadowed(VSOutput input) : SV_TARGET0 {
 
 	return ResolvePixel(input, true);

@@ -7,7 +7,7 @@ cbuffer PickingBuffer : register(b0) {
 	uint inputPixelY;
 	uint textureWidth;
 	uint textureHeight;
-	
+
 	float4x4 inverseViewProjection;
 
 	float3 cameraWorldPos;
@@ -57,9 +57,9 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
 	while (rayQuery.Proceed()) {
 	}
 
-	// コミットされたヒットが三角形であれば、インスタンスIDを出力
+	// コミットされたヒットが三角形であればインスタンスIDを出力
 	if (rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT) {
-		
+
 		gOutput[0] = rayQuery.CommittedInstanceID();
 	}
 }

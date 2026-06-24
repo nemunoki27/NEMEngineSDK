@@ -1,0 +1,26 @@
+{
+  "name": "LineGeometryPipeline",
+  "variants": [
+    {
+      "kind": "GraphicsGeometry",
+      "pipelineType": "Geometry",
+      "shader": "7a9d3c5e1b6f4082",
+      "numRenderTargets": 1,
+      "dynamicRenderTargetFormats": true,
+      "dsvFormat": "DXGI_FORMAT_UNKNOWN",
+      "topologyType": "D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE",
+      "rasterizer": {
+        "fillMode": "D3D12_FILL_MODE_SOLID",
+        "cullMode": "D3D12_CULL_MODE_NONE",
+        "frontCounterClockwise": false,
+        "depthClipEnable": true
+      },
+      "depthStencil": {
+        "depthEnable": true,
+        "depthWriteMask": "D3D12_DEPTH_WRITE_MASK_ALL",
+        "depthFunc": "D3D12_COMPARISON_FUNC_LESS_EQUAL",
+        "stencilEnable": false
+      }
+    }
+  ]
+}

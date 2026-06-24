@@ -9,7 +9,6 @@ struct VSOutput {
 
 //============================================================================
 //	画面全体を覆う3頂点の三角形を出力する共通VS
-//	fullscreenCopyとtoneMapToViewで同じ処理なのでここへ集約する
 //============================================================================
 static const uint kFullscreenTriangleVertexCount = 3;
 static const float4 kFullscreenTrianglePositions[kFullscreenTriangleVertexCount] = {

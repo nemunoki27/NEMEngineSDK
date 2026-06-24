@@ -8,7 +8,6 @@ struct CompositeVSOutput {
 
 //============================================================================
 //	constants
-//	FullscreenCopyと同じ全画面三角形
 //============================================================================
 static const uint kNumVertex = 3;
 static const float4 kPositions[kNumVertex] = {

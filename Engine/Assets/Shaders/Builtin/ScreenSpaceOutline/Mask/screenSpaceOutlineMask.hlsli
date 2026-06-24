@@ -3,7 +3,6 @@
 
 //============================================================================
 //	include
-//	Mesh共通のworld transform / 頂点ロード / メッシュレットカリングを再利用する
 //============================================================================
 #include "../../Mesh/Common/defaultMesh.hlsli"
 #include "../Common/screenSpaceOutlineCommon.hlsli"
@@ -11,7 +10,7 @@
 //============================================================================
 //	resources
 //============================================================================
-// この描画単位のStyle IDとSubMesh制限。0は描画しない。restrictが0以上ならそのSubMeshのみ
+// この描画単位のStyle IDとSubMesh制限
 cbuffer ScreenSpaceOutlineMaskConstantsBuffer : register(b1, space1) {
 
 	ScreenSpaceOutlineMaskConstants gMaskConstants;

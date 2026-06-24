@@ -7,7 +7,6 @@ groupshared float4x4 gMeshletWorldMatrix;
 
 //============================================================================
 //	main
-//	通常Mesh描画と同じworld transformでMask用頂点を出力する
 //============================================================================
 [outputtopology("triangle")]
 [numthreads(128, 1, 1)]

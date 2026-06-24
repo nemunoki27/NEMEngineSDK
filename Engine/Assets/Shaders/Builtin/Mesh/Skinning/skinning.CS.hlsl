@@ -1,7 +1,6 @@
 //============================================================================
 //	include
 //============================================================================
-// MeshVertex / MeshPackedVertex は共通ヘッダから取る(重複宣言しない)
 #include "../Common/meshShaderSharedTypes.hlsli"
 
 //============================================================================
@@ -133,7 +132,6 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID, uint3 groupID : SV_Group
 	output.position = SkinPosition(input.position, influence, paletteOffset);
 	output.normal = SkinNormal(input.normal, influence, paletteOffset);
 	output.tangent = SkinNormal(input.tangent, influence, paletteOffset);
-	// 接線の利き手はスキニングで変化しないため、入力からそのまま引き継ぐ
 	output.tangentSign = input.tangentSign;
 
 	// スキニング後の頂点を出力

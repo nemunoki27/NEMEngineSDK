@@ -20,8 +20,6 @@ RWTexture2D<uint> gOutputMask : register(u0);
 
 //============================================================================
 //	main
-// 縦方向だけを走査するSeparable Dilationの後段
-// 入力はHorizontal Dilation済みmask。priority降順 -> 距離(|oy|)昇順 -> styleID昇順
 //============================================================================
 [numthreads(8, 8, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
@@ -35,7 +33,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
 	int bestPriority = -2147483648;
 	int bestDistance = 2147483647;
 
-	// 半径は必ず共通上限でclampする。巨大値が来てもGPU Hangしない
+	// 半径は共通上限でclampする、巨大値でもGPU Hangしない
 	int radius = (int)min(gMaxRadiusPixels, kMaxScreenSpaceOutlineRadiusPixels);
 	for (int oy = -radius; oy <= radius; ++oy) {
 

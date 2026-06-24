@@ -44,7 +44,7 @@ cbuffer GridPassConstants : register(b0) {
 };
 
 //============================================================================
-//	structures
+//	functions
 //============================================================================
 float Smoother01(float x) {
 
@@ -227,7 +227,7 @@ PSOutput main(VSOutput input) {
 	float4 accumPremul = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	//============================================================================
-	// minor
+	//	minor
 	//============================================================================
 	{
 		float fade = ComputeDistanceFade(distanceXZ, minorParams0.z, minorParams0.w, minorParams1.x) * horizonFade;
@@ -250,7 +250,7 @@ PSOutput main(VSOutput input) {
 	}
 
 	//============================================================================
-	// major
+	//	major
 	//============================================================================
 	{
 		float fade = ComputeDistanceFade(distanceXZ, majorParams0.z, majorParams0.w, majorParams1.x) * horizonFade;
@@ -273,7 +273,7 @@ PSOutput main(VSOutput input) {
 	}
 
 	//============================================================================
-	// coarse
+	//	coarse
 	//============================================================================
 	{
 		float fade = ComputeDistanceFade(distanceXZ, coarseParams0.z, coarseParams0.w, coarseParams1.x) * horizonFade;
@@ -296,7 +296,7 @@ PSOutput main(VSOutput input) {
 	}
 
 	//============================================================================
-	// axis
+	//	axis
 	//============================================================================
 	{
 		float axisVisibleDistance = max(axisParams.w, 1.0f);

@@ -2,28 +2,25 @@
 #define NEM_DEFERRED_GBUFFER_HLSLI
 
 //============================================================================
-//	Deferred GBufferの共通レイアウト
-//	SceneMainのcolorアタッチメント並びと一致させる、メッシュPSの書き込み側で使う
-//	color0 albedo / color1 normal / color2 worldPos / color3 material / color4 emissive / color5 flags
+//	Deferred GBuffer hlsli
 //============================================================================
 
-// SceneFlagsMainへ書くマテリアルフラグ、0クリアの背景画素と区別する
-static const uint kMaterialFlagSurface = 1u; // ライティング対象の不透明サーフェスが存在する
+// ライティング対象の不透明マテリアルフラグ
+static const uint kMaterialFlagSurface = 1u;
 
 //============================================================================
 //	GBuffer書き込み構造体
 //============================================================================
 struct GBufferOutput {
 
-	float4 albedo : SV_TARGET0;   // rgb albedo
-	float4 normal : SV_TARGET1;   // rgb worldNormal*0.5+0.5
-	float4 worldPos : SV_TARGET2; // rgb worldPosition
-	float4 material : SV_TARGET3; // r metallic, g roughness, b occlusion
-	float4 emissive : SV_TARGET4; // rgb emissive、αは描画時αブレンドを通すため常に1
-	uint flags : SV_TARGET5;      // materialFlags
+	float4 albedo : SV_TARGET0; // RGB アルベド
+	float4 normal : SV_TARGET1; // RGB ワールド法線
+	float4 worldPos : SV_TARGET2; // RGB ワールド座標
+	float4 material : SV_TARGET3; // R メタリック, G ラフネス, B 遮蔽、オクリュージョン
+	float4 emissive : SV_TARGET4; // RGB 発光色
+	uint flags : SV_TARGET5; // マテリアルフラグ
 };
 
-// PS側で組み立てるサーフェス値、エンコード前の生の値を持つ
 struct MeshSurface {
 
 	float3 albedo;
@@ -35,17 +32,16 @@ struct MeshSurface {
 	float3 emissive;
 };
 
-// MeshSurfaceをGBufferのレイアウトへ詰める、法線は0..1へ寄せて格納する
+// メッシュサーフェイスをGBufferに設定して返す
 GBufferOutput EncodeGBuffer(MeshSurface surface) {
 
-	GBufferOutput o;
-	o.albedo = float4(surface.albedo, 1.0f);
-	o.normal = float4(surface.normal * 0.5f + 0.5f, 1.0f);
-	o.worldPos = float4(surface.worldPos, 1.0f);
-	o.material = float4(surface.metallic, surface.roughness, surface.occlusion, 1.0f);
-	o.emissive = float4(surface.emissive, 1.0f);
-	o.flags = kMaterialFlagSurface;
-	return o;
+	GBufferOutput output;
+	output.albedo = float4(surface.albedo, 1.0f);
+	output.normal = float4(surface.normal * 0.5f + 0.5f, 1.0f);
+	output.worldPos = float4(surface.worldPos, 1.0f);
+	output.material = float4(surface.metallic, surface.roughness, surface.occlusion, 1.0f);
+	output.emissive = float4(surface.emissive, 1.0f);
+	output.flags = kMaterialFlagSurface;
+	return output;
 }
-
 #endif // NEM_DEFERRED_GBUFFER_HLSLI

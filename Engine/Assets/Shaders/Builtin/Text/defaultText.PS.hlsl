@@ -34,13 +34,13 @@ StructuredBuffer<PSInstance> gPSInstances : register(t2);
 //============================================================================
 //	functions
 //============================================================================
-// RGBの中央値を計算する関数
+// RGBの中央値を計算する
 float Median(float r, float g, float b) {
 
 	return max(min(r, g), min(max(r, g), b));
 }
 
-// スクリーン上のピクセル距離を計算する関数
+// スクリーン上のピクセル距離を計算する
 float ComputeScreenPxRange(float2 uv, float pxRange, float2 atlasSize) {
 
 	float2 unitRange = float2(pxRange / atlasSize.x, pxRange / atlasSize.y);

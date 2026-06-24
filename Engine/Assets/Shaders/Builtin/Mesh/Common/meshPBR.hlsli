@@ -3,15 +3,13 @@
 
 //============================================================================
 //	MeshのPBR共通定義
-//	BRDFとライト評価とマテリアル解決を、GBuffer描画と前方半透明描画で共有する
-//	defaultMesh.hlsli / meshLighting.hlsli / meshPBRMaterial.hlsli をincludeしてから読むこと
-//	PI/kNoTexture/gSampler/ライト構造体/ComputeDistanceAttenuation/ComputeWorldNormalはmeshLighting.hlsli側に集約済み
 //============================================================================
 
 //============================================================================
-//	PBR BRDF
+//	PBR関数
 //============================================================================
-// GGX分布関数
+
+// hlsl魔導書PBR参照
 float EvalD(float NdotH, float roughness) {
 
 	float a = roughness * roughness;
@@ -19,27 +17,20 @@ float EvalD(float NdotH, float roughness) {
 	float denom = NdotH * NdotH * (a2 - 1.0f) + 1.0f;
 	return a2 / max(PI * denom * denom, 1e-7f);
 }
-
-// Smith幾何減衰 (GGX)
 float EvalG1(float NdotX, float roughness) {
 
 	float r = roughness + 1.0f;
 	float k = (r * r) / 8.0f;
 	return NdotX / max(NdotX * (1.0f - k) + k, 1e-7f);
 }
-
 float EvalG(float NdotV, float NdotL, float roughness) {
 
 	return EvalG1(NdotV, roughness) * EvalG1(NdotL, roughness);
 }
-
-// Fresnel-Schlick近似
 float3 FresnelSchlick(float cosTheta, float3 F0) {
 
 	return F0 + (1.0f - F0) * pow(saturate(1.0f - cosTheta), 5.0f);
 }
-
-// ディズニーベース拡散反射
 float3 DisneyDiffuse(float NdotL, float NdotV, float LdotH, float roughness, float3 albedo) {
 
 	float energyBias = lerp(0.0f, 0.5f, roughness);
@@ -53,14 +44,14 @@ float3 DisneyDiffuse(float NdotL, float NdotV, float LdotH, float roughness, flo
 //============================================================================
 //	テクスチャサンプル
 //============================================================================
-// bindless indexのテクスチャをサンプルする、未指定kNoTextureはfallbackValueを返す
+
 float4 SamplePBRTexture(uint textureIndex, float2 uv, float4 fallbackValue) {
 
 	if (textureIndex == kNoTexture) {
 		return fallbackValue;
 	}
-	Texture2D<float4> tex = ResourceDescriptorHeap[NonUniformResourceIndex(textureIndex)];
-	return tex.Sample(gSampler, uv);
+	Texture2D<float4> texture = ResourceDescriptorHeap[NonUniformResourceIndex(textureIndex)];
+	return texture.Sample(gSampler, uv);
 }
 
 //============================================================================
@@ -180,8 +171,6 @@ float3 EvaluatePBRSpotLight(SpotLight light, float3 worldPos, float3 N, float3 V
 
 //============================================================================
 //	マテリアル解決
-//	baseColor/metallic/roughness/ao/法線/発光をテクスチャとパラメータから解決する
-//	GBuffer書き込みと前方ライティングで同じ解決を共有する
 //============================================================================
 struct ResolvedPBRMaterial {
 
@@ -231,8 +220,7 @@ ResolvedPBRMaterial ResolvePBRMaterial(VSOutput input) {
 	return m;
 }
 
-// 解決済みマテリアルに全ライトのPBRライティングを合算する、半透明の前方描画で使う
-// 不透明はGBufferへ書きDeferredのLightingPassで評価するため、ここは通らない
+// 全ライトのPBRライティングを合算する、半透明の前方描画で使う
 float3 EvaluateForwardPBRLighting(VSOutput input, ResolvedPBRMaterial m) {
 
 	float3 V = normalize(renderCameraPos - input.worldPos);
@@ -246,7 +234,6 @@ float3 EvaluateForwardPBRLighting(VSOutput input, ResolvedPBRMaterial m) {
 			m.baseColor.rgb, m.metallic, m.roughness, F0);
 	}
 
-	// ライトカリング廃止に伴い、点光源/スポットは全ライトを直接ループする
 	[loop]
 	for (uint pi = 0; pi < pointCount; ++pi) {
 
@@ -260,10 +247,9 @@ float3 EvaluateForwardPBRLighting(VSOutput input, ResolvedPBRMaterial m) {
 			m.baseColor.rgb, m.metallic, m.roughness, F0);
 	}
 
-	// 環境光 (AOで減衰)
+	// 環境光はAOで減衰
 	float3 ambient = 0.03f * m.baseColor.rgb * m.ao;
 
 	return Lo + ambient + m.emissive;
 }
-
 #endif // NEM_MESH_PBR_HLSLI

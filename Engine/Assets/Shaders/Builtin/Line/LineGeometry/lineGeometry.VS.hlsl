@@ -10,7 +10,6 @@ VSOutput main(VSInput input) {
 
 	VSOutput output;
 
-	// 入力をそのまま出力して、ジオメトリシェーダーで処理しやすいように必要な情報を渡す
 	output.position = input.position;
 	output.thickness = input.thickness;
 	output.color = input.color;

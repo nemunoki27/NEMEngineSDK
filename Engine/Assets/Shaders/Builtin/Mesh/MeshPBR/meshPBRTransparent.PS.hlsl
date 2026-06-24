@@ -16,11 +16,11 @@ struct TransparentPSOutput {
 
 //============================================================================
 //	mainTransparent
-//	半透明は前方描画のままPBRライティングして合成色を出す
 //============================================================================
 TransparentPSOutput mainTransparent(VSOutput input) {
 
 	ResolvedPBRMaterial m = ResolvePBRMaterial(input);
+	// フォワードレンダリングでPBR処理
 	float3 finalColor = EvaluateForwardPBRLighting(input, m);
 
 	TransparentPSOutput output;

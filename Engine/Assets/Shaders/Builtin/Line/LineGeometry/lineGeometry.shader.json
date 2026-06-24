@@ -1,0 +1,23 @@
+{
+  "name": "LineGeometry",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "b2995658d93cd4ab",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "GS",
+      "file": "7a9d3c5e1b6f4087",
+      "entry": "main",
+      "profile": "gs_6_0"
+    },
+    {
+      "stage": "PS",
+      "file": "7a9d3c5e1b6f4086",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}

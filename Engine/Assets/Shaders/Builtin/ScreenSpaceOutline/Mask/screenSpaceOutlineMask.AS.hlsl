@@ -7,7 +7,6 @@ groupshared MeshDispatchPayload payload;
 
 //============================================================================
 //	main
-//	通常Mesh描画と同じメッシュレットカリングでMSへ振り分ける
 //============================================================================
 [numthreads(32, 1, 1)]
 void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID) {

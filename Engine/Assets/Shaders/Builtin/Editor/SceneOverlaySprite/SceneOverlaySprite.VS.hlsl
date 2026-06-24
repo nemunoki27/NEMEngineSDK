@@ -2,11 +2,13 @@
 //	resources
 //============================================================================
 cbuffer SceneOverlaySpriteView : register(b0) {
+
 	float2 gViewSize;
 	float2 _pad0;
 };
 
 struct SpriteInstance {
+
 	float2 center;
 	float2 halfSize;
 	float4 color;
@@ -19,6 +21,7 @@ StructuredBuffer<SpriteInstance> gSceneOverlaySpriteInstances : register(t1);
 //	output
 //============================================================================
 struct VSOutput {
+
 	float4 position : SV_POSITION;
 	float2 uv : TEXCOORD0;
 	float4 color : COLOR0;
