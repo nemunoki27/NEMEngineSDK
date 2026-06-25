@@ -16,7 +16,10 @@ function Ensure-PropertyGroup {
         [string]$Condition
     )
 
-    $group = $Document.Project.PropertyGroup | Where-Object { $_.Condition -eq $Condition } | Select-Object -First 1
+    # 新規作成直後の <Project/> は PropertyGroup を持たない。StrictMode 下では
+    # $Document.Project.PropertyGroup の直接アクセスが「メンバー無し」で throw するため、
+    # ChildNodes を走査して存在チェックする（不在でも空集合で安全に進む）
+    $group = @($Document.Project.ChildNodes | Where-Object { $_.LocalName -eq 'PropertyGroup' -and $_.Condition -eq $Condition }) | Select-Object -First 1
     if ($null -ne $group) {
         return $group
     }
@@ -81,7 +84,7 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 [xml]$verifyDocument = Get-Content -LiteralPath $ProjectUserPath -Raw
 foreach ($condition in $conditions) {
-    $group = $verifyDocument.Project.PropertyGroup | Where-Object { $_.Condition -eq $condition } | Select-Object -First 1
+    $group = @($verifyDocument.Project.ChildNodes | Where-Object { $_.LocalName -eq 'PropertyGroup' -and $_.Condition -eq $condition }) | Select-Object -First 1
     if ($null -eq $group) {
         throw "Debugger property group was not written: $condition"
     }
