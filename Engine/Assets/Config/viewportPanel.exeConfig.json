@@ -3,7 +3,7 @@
         "cameraMode": "DebugManual",
         "drawDefaultGrid": false,
         "enableSnapEditEntity": false,
-        "manipulatorMode": "Scale",
+        "manipulatorMode": "Translate",
         "manualCameraDimension": "Type3D",
         "snap": {
             "drawGrid": true,

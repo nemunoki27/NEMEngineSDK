@@ -1,0 +1,29 @@
+{
+    "autoUpdateInputType": false,
+    "deadZone": 8000.0,
+    "detectTriggers": [
+        {
+            "code": 0,
+            "device": 1,
+            "isMovement": true
+        },
+        {
+            "code": 12,
+            "device": 1,
+            "isMovement": false
+        },
+        {
+            "code": 0,
+            "device": 0,
+            "isMovement": true
+        }
+    ],
+    "mouseAreaPosX": 0.0,
+    "mouseAreaPosY": 0.0,
+    "mouseAreaSizeX": 0.0,
+    "mouseAreaSizeY": 0.0,
+    "mouseRangeControl": false,
+    "mouseReleaseModKey": 29,
+    "mouseReleaseTriggerKey": 28,
+    "movementThreshold": 0.30000001192092896
+}
