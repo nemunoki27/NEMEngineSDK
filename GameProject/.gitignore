@@ -1,0 +1,38 @@
+# チーム共有が不要なもの（ビルド成果物・生成物・ローカル環境）はすべてここで除外する
+# 共有するのはソース(main.cpp / Scripts/*.cs / *.csproj)とゲーム内容(GameAssets)、Premakeのlua等のみ
+# External/NEMEngine はエンジンSDKの submodule なので除外しない（.gitmodules で管理）
+
+# ===== Visual Studio / MSBuild の生成物 =====
+.vs/
+Project/.vs/
+Project/*.sln
+Project/*.slnx
+Project/**/*.vcxproj
+Project/**/*.vcxproj.filters
+Project/**/*.vcxproj.user
+Project/**/*.vcxproj.nuget.*
+Project/**/*.props
+Project/**/*.targets
+Project/**/*.csproj.user
+
+# ===== C#(GameScripts) のビルド出力・中間生成物 =====
+Project/**/bin/
+Project/**/obj/
+Project/**/Managed/
+
+# ===== エンジン/ツールのビルド出力・作業領域 =====
+Generated/
+Project/Library/
+Project/Log/
+
+# ===== ローカルマシン固有の設定・ログ =====
+Premake/local_settings.lua
+Premake/local_settings.bat
+Premake/premake_error.log
+Project/EditorLayout.ini
+Project/**/*.exeConfig.json
+
+# ===== ツール/OS のキャッシュ =====
+.serena/
+Thumbs.db
+.DS_Store
