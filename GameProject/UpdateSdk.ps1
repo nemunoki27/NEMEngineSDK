@@ -141,7 +141,12 @@ if ($isJunction) {
     }
 }
 
-Sync-GameProjectSupportFiles
+$repairScript = Join-Path $externalEngine "GameProject\RepairGameProject.ps1"
+if (Test-Path -LiteralPath $repairScript) {
+    & $repairScript -GameRoot $gameRoot
+} else {
+    Sync-GameProjectSupportFiles
+}
 
 Write-Host ""
 Write-Host "Visual Studio プロジェクトを再生成します..."
