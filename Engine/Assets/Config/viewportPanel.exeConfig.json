@@ -1,7 +1,7 @@
 {
     "sceneView": {
         "cameraMode": "DebugManual",
-        "drawDefaultGrid": false,
+        "drawDefaultGrid": true,
         "enableSnapEditEntity": false,
         "manipulatorMode": "Translate",
         "manualCameraDimension": "Type3D",
