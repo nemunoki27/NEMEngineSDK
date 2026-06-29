@@ -8,7 +8,6 @@
 //============================================================================
 //	PBR関数
 //============================================================================
-
 // hlsl魔導書PBR参照
 float EvalD(float NdotH, float roughness) {
 
@@ -220,7 +219,7 @@ ResolvedPBRMaterial ResolvePBRMaterial(VSOutput input) {
 	return m;
 }
 
-// 全ライトのPBRライティングを合算する、半透明の前方描画で使う
+// 半透明の前方描画で使う、全ライトのPBRライティングを合算する
 float3 EvaluateForwardPBRLighting(VSOutput input, ResolvedPBRMaterial m) {
 
 	float3 V = normalize(renderCameraPos - input.worldPos);

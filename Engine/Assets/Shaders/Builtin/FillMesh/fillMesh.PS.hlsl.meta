@@ -1,0 +1,6 @@
+{
+  "guid": "a839aeebe0aef31e",
+  "importer": "nlohmann::json",
+  "type": "Shader",
+  "version": 1
+}

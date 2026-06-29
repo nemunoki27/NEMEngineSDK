@@ -1,0 +1,12 @@
+{
+    "domain": "Surface",
+    "name": "fillMesh",
+    "parameters": {},
+    "passes": [
+        {
+            "passKind": "Draw",
+            "pipeline": "0f075b1475b7528f",
+            "preferredVariant": "GraphicsVertex"
+        }
+    ]
+}
