@@ -1,10 +1,14 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)]
     [string]$ProjectUserPath,
 
     [string]$WorkingDirectory = "..",
 
-    [string]$DebuggerType = "NativeWithManagedCore"
+    [string]$DebuggerType = "NativeWithManagedCore",
+
+    # デバッガ起動時に渡す追加の環境変数(例: "NEMENGINE_ROOT=C:\...\Project")。空なら設定しない。
+    # 取り込みゲームは作業ディレクトリがゲームフォルダになるため、エンジンのProjectルートをこの変数で示す。
+    [string]$EnvironmentVariables = ""
 )
 
 Set-StrictMode -Version Latest
@@ -72,6 +76,11 @@ foreach ($condition in $conditions) {
     Set-ChildValue -Parent $group -Name "LocalDebuggerWorkingDirectory" -Value $WorkingDirectory
     Set-ChildValue -Parent $group -Name "DebuggerFlavor" -Value "WindowsLocalDebugger"
     Set-ChildValue -Parent $group -Name "LocalDebuggerDebuggerType" -Value $DebuggerType
+
+    # 既存の環境変数(VS既定)も引き継げるよう $(LocalDebuggerEnvironment) を末尾に残す
+    if (-not [string]::IsNullOrWhiteSpace($EnvironmentVariables)) {
+        Set-ChildValue -Parent $group -Name "LocalDebuggerEnvironment" -Value ($EnvironmentVariables + "`n" + '$(LocalDebuggerEnvironment)')
+    }
 }
 
 $directory = Split-Path -Parent $ProjectUserPath
