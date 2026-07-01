@@ -83,7 +83,7 @@ float ComputeDistanceAttenuation(float dist, float range, float decay) {
 }
 
 //============================================================================
-//	ワールド法線の計算、法線マップを考慮する
+//	ワールド法線の計算
 //============================================================================
 float3 ComputeWorldNormal(VSOutput input, uint normalTextureIndex, float2 uv) {
 
@@ -92,9 +92,8 @@ float3 ComputeWorldNormal(VSOutput input, uint normalTextureIndex, float2 uv) {
 		return N;
 	}
 
-	// TBN構築は共通helperへ集約している、tangentSignとorientationSign補正込み
+	// TBN構築
 	float3x3 TBN = BuildMeshTBN(input);
-
 	Texture2D<float4> normalTex = ResourceDescriptorHeap[NonUniformResourceIndex(normalTextureIndex)];
 	float3 tangentNormal = normalTex.Sample(gSampler, uv).xyz * 2.0f - 1.0f;
 
