@@ -1,7 +1,7 @@
 //============================================================================
 //	include
 //============================================================================
-#include "../Mesh/Common/meshShaderSharedTypes.hlsli"
+#include "../Mesh/Common/deferredGBuffer.hlsli"
 
 //============================================================================
 //	resources
@@ -34,6 +34,11 @@ cbuffer RaytracingViewConstants : register(b0) {
 	float gSkyIntensity;
 	float gFresnelMin;
 	float gPad0;
+
+	float4 gSkyboxColor;
+	uint gSkyboxCubemapIndex;
+	uint gHasSkybox;
+	float2 gPad1;
 };
 
 struct ReflectionPayload {
@@ -61,6 +66,10 @@ Texture2D<float4> gSourcePosition : register(t4);
 
 StructuredBuffer<RaytracingInstanceShaderData> gRaytracingSceneInstances : register(t5);
 StructuredBuffer<SubMeshShaderData> gRaytracingSubMeshes : register(t6);
+Texture2D<uint> gSourceFlags : register(t7);
+
+// 反射に映すインスタンスのTLASマスク
+static const uint kRaytracingMaskReflectionCaster = 1u << 1;
 
 RWTexture2D<float4> gDestColor : register(u0);
 SamplerState gLinearClamp : register(s0);
@@ -256,6 +265,11 @@ void ReflectionRayGen() {
 	if (depthValue >= 1.0f) {
 		return;
 	}
+	// 反射を受けないサーフェイスはそのまま残す
+	uint surfaceFlags = gSourceFlags.Load(int3(pixel, 0));
+	if ((surfaceFlags & kMaterialFlagReceiveReflection) == 0u) {
+		return;
+	}
 
 	float3 worldPos = LoadPrimaryWorldPosition(pixel);
 
@@ -287,10 +301,21 @@ void ReflectionRayGen() {
 	payload.hit = 0;
 	payload.color = 0.0f.xxx;
 
+	// CastReflection無効のインスタンスはマスクで除外される
 	TraceRay(gSceneTLAS, RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_CULL_NON_OPAQUE,
-		0xFF, 0, 1, 0, ray, payload);
+		kRaytracingMaskReflectionCaster, 0, 1, 0, ray, payload);
 
-	float3 reflectionColor = (payload.hit != 0) ? payload.color : EvaluateSkyReflection(reflectionDir);
+	// ミス時はskyboxがあれば背景と同じcubemapを映し、無ければ手続き的な空にする
+	float3 reflectionColor;
+	if (payload.hit != 0) {
+		reflectionColor = payload.color;
+	} else if (gHasSkybox != 0u && gSkyboxCubemapIndex != kNoTexture) {
+
+		TextureCube<float4> skybox = ResourceDescriptorHeap[NonUniformResourceIndex(gSkyboxCubemapIndex)];
+		reflectionColor = skybox.SampleLevel(gLinearClamp, reflectionDir, 0.0f).rgb * gSkyboxColor.rgb;
+	} else {
+		reflectionColor = EvaluateSkyReflection(reflectionDir);
+	}
 
 	float fresnel = pow(1.0f - NdotV, 5.0f);
 	float reflectionWeight = saturate(gReflectionIntensity * lerp(gFresnelMin, 1.0f, fresnel));

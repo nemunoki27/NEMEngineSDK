@@ -90,5 +90,10 @@ struct MeshInstance {
 };
 
 static const uint MESH_INSTANCE_FLAG_SKINNED = 1u;
+// MeshRenderFlagsから写されるライティング適用フラグ
+static const uint MESH_INSTANCE_FLAG_LIGHTING = 1u << 1;
+static const uint MESH_INSTANCE_FLAG_RECEIVE_SHADOW = 1u << 2;
+static const uint MESH_INSTANCE_FLAG_RECEIVE_IBL = 1u << 3;
+static const uint MESH_INSTANCE_FLAG_RECEIVE_REFLECTION = 1u << 4;
 
 #endif // NEM_MESH_SHADER_SHARED_TYPES_HLSLI

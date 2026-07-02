@@ -2,11 +2,24 @@
 #define NEM_DEFERRED_GBUFFER_HLSLI
 
 //============================================================================
+//	include
+//============================================================================
+#include "meshShaderSharedTypes.hlsli"
+
+//============================================================================
 //	Deferred GBuffer hlsli
 //============================================================================
 
 // ライティング対象の不透明マテリアルフラグ
 static const uint kMaterialFlagSurface = 1u;
+// ライティングや影の適用フラグ、MeshRenderFlagsからinstance経由で写される
+static const uint kMaterialFlagLighting = 1u << 1;
+static const uint kMaterialFlagReceiveShadow = 1u << 2;
+static const uint kMaterialFlagReceiveIBL = 1u << 3;
+static const uint kMaterialFlagReceiveReflection = 1u << 4;
+// フラグを持たない描画で使う全適用のデフォルト値
+static const uint kMaterialFlagLightingDefault =
+	kMaterialFlagLighting | kMaterialFlagReceiveShadow | kMaterialFlagReceiveIBL | kMaterialFlagReceiveReflection;
 
 //============================================================================
 //	GBuffer書き込み構造体
@@ -30,7 +43,28 @@ struct MeshSurface {
 	float roughness;
 	float occlusion;
 	float3 emissive;
+	// kMaterialFlag*のライティング適用フラグ
+	uint flags;
 };
+
+// MeshInstanceのflagsからGBufferへ書くマテリアルフラグを作る
+uint BuildMaterialFlags(uint instanceFlags) {
+
+	uint flags = 0u;
+	if (instanceFlags & MESH_INSTANCE_FLAG_LIGHTING) {
+		flags |= kMaterialFlagLighting;
+	}
+	if (instanceFlags & MESH_INSTANCE_FLAG_RECEIVE_SHADOW) {
+		flags |= kMaterialFlagReceiveShadow;
+	}
+	if (instanceFlags & MESH_INSTANCE_FLAG_RECEIVE_IBL) {
+		flags |= kMaterialFlagReceiveIBL;
+	}
+	if (instanceFlags & MESH_INSTANCE_FLAG_RECEIVE_REFLECTION) {
+		flags |= kMaterialFlagReceiveReflection;
+	}
+	return flags;
+}
 
 // メッシュサーフェイスをGBufferに設定して返す
 GBufferOutput EncodeGBuffer(MeshSurface surface) {
@@ -41,7 +75,7 @@ GBufferOutput EncodeGBuffer(MeshSurface surface) {
 	output.worldPos = float4(surface.worldPos, 1.0f);
 	output.material = float4(surface.metallic, surface.roughness, surface.occlusion, 1.0f);
 	output.emissive = float4(surface.emissive, 1.0f);
-	output.flags = kMaterialFlagSurface;
+	output.flags = kMaterialFlagSurface | surface.flags;
 	return output;
 }
 #endif // NEM_DEFERRED_GBUFFER_HLSLI

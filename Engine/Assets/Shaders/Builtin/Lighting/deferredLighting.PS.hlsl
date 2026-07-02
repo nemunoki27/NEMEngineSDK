@@ -94,7 +94,10 @@ cbuffer DeferredLightingConstants : register(b1) {
 
 	float shadowNormalBias;
 	float shadowMaxDistance;
-	float2 _shadowPad;
+	// Skyboxから畳み込んだ放射照度cubemap、無い場合はkNoCubemap
+	uint irradianceCubemapIndex;
+	// 拡散IBL環境光の強さ
+	float iblIntensity;
 };
 
 // 無効キューブマップインデックス
@@ -105,6 +108,9 @@ static const uint kNoCubemap = 0xFFFFFFFF;
 //============================================================================
 
 RaytracingAccelerationStructure gSceneTLAS : register(t10);
+
+// 影を落とすインスタンスのTLASマスク
+static const uint kRaytracingMaskShadowCaster = 1u;
 
 // 平行光源方向へシャドウレイを飛ばして遮蔽判定
 bool TraceDirectionalShadow(float3 worldPos, float3 worldNormal, float3 lightDirection) {
@@ -117,7 +123,8 @@ bool TraceDirectionalShadow(float3 worldPos, float3 worldNormal, float3 lightDir
 
 	RayQuery < 0 > rayQuery;
 
-	rayQuery.TraceRayInline(gSceneTLAS, 0, 0xFF, rayDesc);
+	// CastShadow無効のインスタンスはマスクで除外される
+	rayQuery.TraceRayInline(gSceneTLAS, 0, kRaytracingMaskShadowCaster, rayDesc);
 	while (rayQuery.Proceed()) {
 	}
 	return rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT;
@@ -241,6 +248,11 @@ float4 ResolvePixel(VSOutput input, bool useShadow) {
 	float ao = material.b;
 	float3 emissive = gEmissive.Load(pixel).rgb;
 
+	// ライティングしないサーフェイスはアルベドと発光をそのまま出す
+	if ((flags & kMaterialFlagLighting) == 0u) {
+		return float4(albedo + emissive, 1.0f);
+	}
+
 	float3 V = normalize(cameraPos - worldPos);
 	float3 F0 = lerp(0.04f.xxx, albedo, metallic);
 
@@ -252,10 +264,10 @@ float4 ResolvePixel(VSOutput input, bool useShadow) {
 
 		DirectionalLight light = gDirectionalLights[di];
 		float3 L = normalize(-light.direction);
-		// 影計算を行うか、行わない場合は1.0fでそのまま返す
+		// 影計算を行うか、影を受けないサーフェイスもスキップして1.0fのまま使う
 		float shadow = 1.0f;
-		if (useShadow) {
-			
+		if (useShadow && (flags & kMaterialFlagReceiveShadow) != 0u) {
+
 			shadow = TraceDirectionalShadow(worldPos, N, light.direction) ? (1.0f - light.shadowStrength) : 1.0f;
 		}
 		float3 radiance = light.color.rgb * light.intensity * shadow;
@@ -306,8 +318,22 @@ float4 ResolvePixel(VSOutput input, bool useShadow) {
 		Lo += EvaluatePBRLight(N, V, L, radiance, albedo, metallic, roughness, F0);
 	}
 
-	// 環境光はAOで減衰、発光はそのまま加算する
-	float3 ambient = ambientIntensity * albedo * ao;
+	// 環境光はAOで減衰、環境光を受けないサーフェイスは加算しない
+	float3 ambient = 0.0f.xxx;
+	if ((flags & kMaterialFlagReceiveIBL) != 0u) {
+		if (hasSkybox != 0u && irradianceCubemapIndex != kNoCubemap) {
+
+			// Skyboxから畳み込んだ放射照度で拡散環境光を作る
+			TextureCube<float4> irradianceMap = ResourceDescriptorHeap[NonUniformResourceIndex(irradianceCubemapIndex)];
+			float3 irradiance = irradianceMap.SampleLevel(gSampler, N, 0.0f).rgb;
+			ambient = irradiance * skyboxColor.rgb * iblIntensity * albedo * ao;
+		} else {
+
+			// Skyboxが無い場合は従来のフラット環境光
+			ambient = ambientIntensity * albedo * ao;
+		}
+	}
+	// 発光はそのまま加算する
 	float3 color = Lo + ambient + emissive;
 
 	return float4(color, 1.0f);

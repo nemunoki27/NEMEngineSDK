@@ -184,6 +184,8 @@ GBufferOutput main(VSOutput input) {
 	surface.roughness = 1.0f;
 	surface.occlusion = 1.0f;
 	surface.emissive = float3(0.0f, 0.0f, 0.0f);
+	// FillMeshはフラグを持たないため全適用で描く
+	surface.flags = kMaterialFlagLightingDefault;
 
 	GBufferOutput output = EncodeGBuffer(surface);
 	// Transparentフェーズのブレンドにα値を反映する、Opaqueのディファード照明はalbedo.rgbのみ使う
