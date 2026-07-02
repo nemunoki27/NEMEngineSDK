@@ -11,7 +11,7 @@
       "topologyType": "D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE",
       "requiresMeshShader": true,
       "depthStencil": {
-        "depthEnable": false,
+        "depthEnable": true,
         "depthWriteMask": "D3D12_DEPTH_WRITE_MASK_ZERO",
         "depthFunc": "D3D12_COMPARISON_FUNC_LESS_EQUAL",
         "stencilEnable": false
@@ -38,7 +38,7 @@
       "dsvFormat": "DXGI_FORMAT_UNKNOWN",
       "topologyType": "D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE",
       "depthStencil": {
-        "depthEnable": false,
+        "depthEnable": true,
         "depthWriteMask": "D3D12_DEPTH_WRITE_MASK_ZERO",
         "depthFunc": "D3D12_COMPARISON_FUNC_LESS_EQUAL",
         "stencilEnable": false

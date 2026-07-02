@@ -119,14 +119,24 @@ float4 ResolveLambertBaseColor(MeshMaterialParameters params, float2 uv) {
 }
 
 // 環境光+発光を加えて最終色を作る、litは平行光源と局所光源の合計
-float4 ComposeLambertColor(MeshMaterialParameters params, float2 uv, float4 baseColor, float3 lit) {
+float4 ComposeLambertColor(MeshMaterialParameters params, float2 uv, float4 baseColor, float3 lit, uint instanceFlags) {
 
-	float3 ambient = 0.03f * baseColor.rgb;
 	float3 emissive = params.emissiveColor.rgb * params.emissiveIntensity;
 	if (params.emissiveTexture != kNoTexture) {
 
 		Texture2D<float4> emissiveTex = ResourceDescriptorHeap[NonUniformResourceIndex(params.emissiveTexture)];
 		emissive *= emissiveTex.Sample(gSampler, uv).rgb;
+	}
+
+	// ライティングしないサーフェイスはベースカラーと発光をそのまま出す
+	if ((instanceFlags & MESH_INSTANCE_FLAG_LIGHTING) == 0u) {
+		return float4(baseColor.rgb + emissive, baseColor.a);
+	}
+
+	// 環境光を受けないサーフェイスは加算しない
+	float3 ambient = 0.0f.xxx;
+	if ((instanceFlags & MESH_INSTANCE_FLAG_RECEIVE_IBL) != 0u) {
+		ambient = 0.03f * baseColor.rgb;
 	}
 
 	float3 finalColor = baseColor.rgb * lit + ambient + emissive;

@@ -222,6 +222,12 @@ ResolvedPBRMaterial ResolvePBRMaterial(VSOutput input) {
 // 半透明の前方描画で使う、全ライトのPBRライティングを合算する
 float3 EvaluateForwardPBRLighting(VSOutput input, ResolvedPBRMaterial m) {
 
+	// ライティングしないサーフェイスはベースカラーと発光をそのまま出す
+	uint instanceFlags = gMeshInstances[input.instanceID].flags;
+	if ((instanceFlags & MESH_INSTANCE_FLAG_LIGHTING) == 0u) {
+		return m.baseColor.rgb + m.emissive;
+	}
+
 	float3 V = normalize(renderCameraPos - input.worldPos);
 	float3 F0 = lerp(0.04f.xxx, m.baseColor.rgb, m.metallic);
 
@@ -246,8 +252,11 @@ float3 EvaluateForwardPBRLighting(VSOutput input, ResolvedPBRMaterial m) {
 			m.baseColor.rgb, m.metallic, m.roughness, F0);
 	}
 
-	// 環境光はAOで減衰
-	float3 ambient = 0.03f * m.baseColor.rgb * m.ao;
+	// 環境光はAOで減衰、環境光を受けないサーフェイスは加算しない
+	float3 ambient = 0.0f.xxx;
+	if ((instanceFlags & MESH_INSTANCE_FLAG_RECEIVE_IBL) != 0u) {
+		ambient = 0.03f * m.baseColor.rgb * m.ao;
+	}
 
 	return Lo + ambient + m.emissive;
 }

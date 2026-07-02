@@ -60,15 +60,19 @@ TransparentPSOutput mainTransparent(VSOutput input) {
 	float4 baseColor = ResolveLambertBaseColor(params, uv);
 	float3 N = ComputeWorldNormal(input, params.normalTexture, uv);
 
-	// 平行光源は影無し、そのあと点とスポット
+	// 平行光源は影無し、そのあと点とスポット、ライティングしない場合は計算を省く
+	uint instanceFlags = gMeshInstances[input.instanceID].flags;
 	float3 lit = 0.0f.xxx;
-	[loop]
-	for (uint i = 0; i < directionalCount; ++i) {
-		lit += EvaluateLambertDirectional(gDirectionalLights[i], N);
+	if ((instanceFlags & MESH_INSTANCE_FLAG_LIGHTING) != 0u) {
+
+		[loop]
+		for (uint i = 0; i < directionalCount; ++i) {
+			lit += EvaluateLambertDirectional(gDirectionalLights[i], N);
+		}
+		lit += AccumulateLocalLambertLighting(input.worldPos, N);
 	}
-	lit += AccumulateLocalLambertLighting(input.worldPos, N);
 
 	TransparentPSOutput output;
-	output.color = ComposeLambertColor(params, uv, baseColor, lit);
+	output.color = ComposeLambertColor(params, uv, baseColor, lit, instanceFlags);
 	return output;
 }
