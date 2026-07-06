@@ -1,0 +1,6 @@
+{
+  "guid": "f62cfa15af7cd80e",
+  "importer": "nlohmann::json",
+  "type": "Texture",
+  "version": 1
+}
