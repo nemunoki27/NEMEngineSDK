@@ -45,7 +45,8 @@ struct PointLight {
 
 	float radius;
 	float decay;
-	float2 _pad0;
+	float shadowStrength;
+	float _pad0;
 };
 // スポットライト
 struct SpotLight {
@@ -131,6 +132,29 @@ bool TraceDirectionalShadow(float3 worldPos, float3 worldNormal, float3 lightDir
 }
 
 //============================================================================
+//	点光源影
+//============================================================================
+
+// 点光源へシャドウレイを飛ばして遮蔽判定、ライトまでの距離だけを判定範囲にする
+bool TracePointShadow(float3 worldPos, float3 worldNormal, float3 toLight, float distToLight) {
+
+	RayDesc rayDesc;
+	rayDesc.Origin = worldPos + worldNormal * shadowNormalBias;
+	rayDesc.Direction = toLight / distToLight;
+	rayDesc.TMin = 0.001f;
+	// ライトより奥の遮蔽は影にしないよう、TMaxをライトまでの距離にする
+	rayDesc.TMax = distToLight;
+
+	RayQuery < 0 > rayQuery;
+
+	// CastShadow無効のインスタンスはマスクで除外される
+	rayQuery.TraceRayInline(gSceneTLAS, 0, kRaytracingMaskShadowCaster, rayDesc);
+	while (rayQuery.Proceed()) {
+	}
+	return rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT;
+}
+
+//============================================================================
 //	PBR関数
 //============================================================================
 
@@ -203,6 +227,9 @@ float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 radiance,
 	float3 diffuse = kD * DisneyDiffuse(NdotL, NdotV, LdotH, roughness, albedo);
 
 	return (diffuse + specular) * NdotL * radiance;
+}
+float3 Square(float3 value) {
+	return value * value;
 }
 
 //============================================================================
@@ -288,7 +315,15 @@ float4 ResolvePixel(VSOutput input, bool useShadow) {
 			continue;
 		}
 		float3 L = toLight / dist;
-		float3 radiance = light.color.rgb * light.intensity * attenuation;
+		// 影計算を行うか、影を受けないサーフェイスもスキップして1.0fのまま使う
+		float shadow = 1.0f;
+		if (useShadow && (flags & kMaterialFlagReceiveShadow) != 0u) {
+
+			// サーフェイスからライトまでの間に遮蔽があれば影の強さ分だけ暗くする
+			shadow = TracePointShadow(worldPos, N, toLight, dist) ? (1.0f - light.shadowStrength) : 1.0f;
+		}
+
+		float3 radiance = light.color.rgb * light.intensity * attenuation * shadow;
 		Lo += EvaluatePBRLight(N, V, L, radiance, albedo, metallic, roughness, F0);
 	}
 	// スポットライト
