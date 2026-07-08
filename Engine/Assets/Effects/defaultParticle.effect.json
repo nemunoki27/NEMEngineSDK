@@ -1,9 +1,5 @@
 {
-    "billboardAxes": [
-        "X",
-        "Y",
-        "Z"
-    ],
+    "billboardAxes": [],
     "crossPlane": {
         "pivot": {
             "x": 0.5,
@@ -22,9 +18,9 @@
             "z": 0.5
         },
         "size": {
-            "x": 1.0,
-            "y": 1.0,
-            "z": 1.0
+            "x": 1.8699994087219238,
+            "y": 1.8699994087219238,
+            "z": 1.8699994087219238
         }
     },
     "cylinder": {
@@ -50,15 +46,15 @@
             "y": 1.0,
             "z": 1.0
         },
-        "circleArc": 12.0,
-        "circleRadius": 57.2400016784668,
+        "circleArc": 360.0,
+        "circleRadius": 0.029999999329447746,
         "coneAngle": 25.0,
         "coneRadius": 0.5,
         "emitCount": {
             "constant": 14,
-            "max": 6,
-            "min": 2,
-            "type": "Constant"
+            "max": 33,
+            "min": 1,
+            "type": "Random"
         },
         "emitInterval": 0.0010000000474974513,
         "lifetime": {
@@ -84,23 +80,11 @@
         "shape": "Circle",
         "speed": {
             "constant": 1.600000023841858,
-            "max": 1000.0,
-            "min": 1000.0,
+            "max": 20.010000228881836,
+            "min": 1.0,
             "type": "Random"
         },
         "sphereRadius": 0.5,
-        "startColor": {
-            "a": 1.0,
-            "b": 0.7914692163467407,
-            "g": 0.6100861430168152,
-            "r": 0.12003324925899506
-        },
-        "startSize": {
-            "constant": 0.30000001192092896,
-            "max": 0.4000000059604645,
-            "min": 0.20000000298023224,
-            "type": "Random"
-        },
         "torusRadius": 1.0,
         "torusThickness": 0.20000000298023224
     },
@@ -125,19 +109,91 @@
         {
             "id": "ColorOverLifetime",
             "params": {
-                "easingType": "EaseOutSine",
+                "curveChannels": [
+                    {
+                        "defaultValue": 1.0,
+                        "keys": [
+                            {
+                                "inTangent": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "interpolation": "Linear",
+                                "outTangent": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "time": 0.0,
+                                "value": 1.0
+                            }
+                        ],
+                        "name": "R"
+                    },
+                    {
+                        "defaultValue": 1.0,
+                        "keys": [
+                            {
+                                "inTangent": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "interpolation": "Linear",
+                                "outTangent": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "time": 0.0,
+                                "value": 1.0
+                            }
+                        ],
+                        "name": "G"
+                    },
+                    {
+                        "defaultValue": 1.0,
+                        "keys": [
+                            {
+                                "inTangent": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "interpolation": "Linear",
+                                "outTangent": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "time": 0.0,
+                                "value": 1.0
+                            }
+                        ],
+                        "name": "B"
+                    },
+                    {
+                        "defaultValue": 1.0,
+                        "keys": [],
+                        "name": "A"
+                    }
+                ],
+                "easingType": "EaseInExpo",
                 "endColor": {
                     "a": 0.0,
-                    "b": 1.0,
-                    "g": 1.0,
+                    "b": 0.0,
+                    "g": 0.8815165758132935,
                     "r": 1.0
                 },
                 "startColor": {
                     "a": 1.0,
-                    "b": 1.0,
-                    "g": 1.0,
+                    "b": 0.0,
+                    "g": 0.0,
                     "r": 1.0
-                }
+                },
+                "useCurve": false
+            }
+        },
+        {
+            "id": "NoiseForce",
+            "params": {
+                "frequency": 31.711000442504883,
+                "strength": 128.0
             }
         }
     ],
@@ -158,13 +214,13 @@
     "ring": {
         "divide": 16,
         "endAngle": 360.0,
-        "innerRadius": 28.90999984741211,
-        "outerRadius": 47.400001525878906,
+        "innerRadius": 0.14000000059604645,
+        "outerRadius": 0.9100000262260437,
         "startAngle": 0.0
     },
-    "shape": "Ring",
-    "sortMode": "None",
-    "space": "Screen2D",
+    "shape": "Cube",
+    "sortMode": "BackToFront",
+    "space": "World3D",
     "sphere": {
         "latitudeDivide": 16,
         "longitudeDivide": 24,
@@ -173,8 +229,8 @@
     "trail": {
         "enabled": false,
         "maxPoints": 16,
-        "minDistance": 0.05000000074505806,
-        "width": 0.10000000149011612
+        "minDistance": 0.0010000000474974513,
+        "width": 0.050999999046325684
     },
     "version": 1
 }
