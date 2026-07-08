@@ -1,0 +1,14 @@
+{
+    "domain": "UI",
+    "name": "particle2D",
+    "parameters": {
+        "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 }
+    },
+    "passes": [
+        {
+            "passKind": "Draw",
+            "pipeline": "eff0000000000007",
+            "preferredVariant": "GraphicsVertex"
+        }
+    ]
+}

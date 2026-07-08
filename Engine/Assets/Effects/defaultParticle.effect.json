@@ -1,0 +1,180 @@
+{
+    "billboardAxes": [
+        "X",
+        "Y",
+        "Z"
+    ],
+    "crossPlane": {
+        "pivot": {
+            "x": 0.5,
+            "y": 0.5
+        },
+        "planeCount": 2,
+        "size": {
+            "x": 1.0,
+            "y": 1.0
+        }
+    },
+    "cube": {
+        "pivot": {
+            "x": 0.5,
+            "y": 0.5,
+            "z": 0.5
+        },
+        "size": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        }
+    },
+    "cylinder": {
+        "bottomRadius": 1.0,
+        "cap": "Both",
+        "height": 2.0,
+        "heightDivide": 1,
+        "maxAngle": 6.2831854820251465,
+        "radialDivide": 16,
+        "topRadius": 1.0,
+        "uvMode": "None"
+    },
+    "duration": 2.0,
+    "emitter": {
+        "boxFaceNegX": true,
+        "boxFaceNegY": true,
+        "boxFaceNegZ": true,
+        "boxFacePosX": true,
+        "boxFacePosY": true,
+        "boxFacePosZ": true,
+        "boxSize": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "circleArc": 12.0,
+        "circleRadius": 57.2400016784668,
+        "coneAngle": 25.0,
+        "coneRadius": 0.5,
+        "emitCount": {
+            "constant": 14,
+            "max": 6,
+            "min": 2,
+            "type": "Constant"
+        },
+        "emitInterval": 0.0010000000474974513,
+        "lifetime": {
+            "constant": 1.0,
+            "max": 0.0010000000474974513,
+            "min": 1.0,
+            "type": "Random"
+        },
+        "maxParticles": 1024,
+        "pointDirection": {
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.0
+        },
+        "rectEdgeNegX": true,
+        "rectEdgeNegY": true,
+        "rectEdgePosX": true,
+        "rectEdgePosY": true,
+        "rectSize": {
+            "x": 1.0,
+            "y": 1.0
+        },
+        "shape": "Circle",
+        "speed": {
+            "constant": 1.600000023841858,
+            "max": 1000.0,
+            "min": 1000.0,
+            "type": "Random"
+        },
+        "sphereRadius": 0.5,
+        "startColor": {
+            "a": 1.0,
+            "b": 0.7914692163467407,
+            "g": 0.6100861430168152,
+            "r": 0.12003324925899506
+        },
+        "startSize": {
+            "constant": 0.30000001192092896,
+            "max": 0.4000000059604645,
+            "min": 0.20000000298023224,
+            "type": "Random"
+        },
+        "torusRadius": 1.0,
+        "torusThickness": 0.20000000298023224
+    },
+    "hemisphere": {
+        "bottomCap": true,
+        "latitudeDivide": 8,
+        "longitudeDivide": 24,
+        "radius": 1.0
+    },
+    "looping": true,
+    "material": "eff0000000000006",
+    "model": "",
+    "modules": [
+        {
+            "id": "SizeOverLifetime",
+            "params": {
+                "easingType": "EaseOutSine",
+                "endScale": 0.0,
+                "startScale": 1.0
+            }
+        },
+        {
+            "id": "ColorOverLifetime",
+            "params": {
+                "easingType": "EaseOutSine",
+                "endColor": {
+                    "a": 0.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "startColor": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                }
+            }
+        }
+    ],
+    "name": "defaultParticle",
+    "plane": {
+        "axis": "XY",
+        "divideX": 1,
+        "divideY": 1,
+        "pivot": {
+            "x": 0.5,
+            "y": 0.5
+        },
+        "size": {
+            "x": 43.560001373291016,
+            "y": 33.93000030517578
+        }
+    },
+    "ring": {
+        "divide": 16,
+        "endAngle": 360.0,
+        "innerRadius": 28.90999984741211,
+        "outerRadius": 47.400001525878906,
+        "startAngle": 0.0
+    },
+    "shape": "Ring",
+    "sortMode": "None",
+    "space": "Screen2D",
+    "sphere": {
+        "latitudeDivide": 16,
+        "longitudeDivide": 24,
+        "radius": 1.0
+    },
+    "trail": {
+        "enabled": false,
+        "maxPoints": 16,
+        "minDistance": 0.05000000074505806,
+        "width": 0.10000000149011612
+    },
+    "version": 1
+}
