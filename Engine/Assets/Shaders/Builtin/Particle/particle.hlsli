@@ -20,6 +20,10 @@ struct ParticleInstance {
 	float4 uvScaleOffset;
 	// 形状アニメーション用のパラメータ、形状ごとに解釈が変わる
 	float4 shapeParams;
+	// 発光色と強さ、wが強さ
+	float4 emissive;
+	// xがアルファ棄却の閾値、yzwは予約
+	float4 materialParams;
 };
 
 struct VSOutput {
@@ -27,6 +31,8 @@ struct VSOutput {
 	float4 position : SV_POSITION;
 	float2 texcoord : TEXCOORD0;
 	float4 color : TEXCOORD1;
+	float4 emissive : TEXCOORD2;
+	float4 materialParams : TEXCOORD3;
 };
 
 #endif // NEM_PARTICLE_HLSLI

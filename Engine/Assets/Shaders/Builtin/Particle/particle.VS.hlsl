@@ -25,6 +25,8 @@ VSOutput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID) {
 	// フリップブックのコマ送りをUVへ反映する
 	output.texcoord = v.uv * instance.uvScaleOffset.xy + instance.uvScaleOffset.zw;
 	output.color = instance.color;
+	output.emissive = instance.emissive;
+	output.materialParams = instance.materialParams;
 
 	return output;
 }

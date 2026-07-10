@@ -47,22 +47,16 @@
             "z": 1.0
         },
         "circleArc": 360.0,
-        "circleRadius": 0.029999999329447746,
+        "circleRadius": 1.850000023841858,
         "coneAngle": 25.0,
         "coneRadius": 0.5,
         "emitCount": {
-            "constant": 14,
-            "max": 33,
+            "constant": 1,
+            "max": 1,
             "min": 1,
-            "type": "Random"
+            "type": "Constant"
         },
-        "emitInterval": 0.0010000000474974513,
-        "lifetime": {
-            "constant": 1.0,
-            "max": 0.0010000000474974513,
-            "min": 1.0,
-            "type": "Random"
-        },
+        "emitInterval": 0.47099998593330383,
         "maxParticles": 1024,
         "pointDirection": {
             "x": 0.0,
@@ -77,12 +71,12 @@
             "x": 1.0,
             "y": 1.0
         },
-        "shape": "Circle",
+        "shape": "Point",
         "speed": {
-            "constant": 1.600000023841858,
-            "max": 20.010000228881836,
-            "min": 1.0,
-            "type": "Random"
+            "constant": 16.0,
+            "max": 24.0,
+            "min": 24.0,
+            "type": "Constant"
         },
         "sphereRadius": 0.5,
         "torusRadius": 1.0,
@@ -97,107 +91,125 @@
     "looping": true,
     "material": "eff0000000000006",
     "model": "",
-    "modules": [
+    "name": "defaultParticle",
+    "phases": [
         {
-            "id": "SizeOverLifetime",
-            "params": {
-                "easingType": "EaseOutSine",
-                "endScale": 0.0,
-                "startScale": 1.0
-            }
-        },
-        {
-            "id": "ColorOverLifetime",
-            "params": {
-                "curveChannels": [
-                    {
-                        "defaultValue": 1.0,
-                        "keys": [
-                            {
-                                "inTangent": {
-                                    "x": 0.0,
-                                    "y": 0.0
-                                },
-                                "interpolation": "Linear",
-                                "outTangent": {
-                                    "x": 0.0,
-                                    "y": 0.0
-                                },
-                                "time": 0.0,
-                                "value": 1.0
-                            }
-                        ],
-                        "name": "R"
-                    },
-                    {
-                        "defaultValue": 1.0,
-                        "keys": [
-                            {
-                                "inTangent": {
-                                    "x": 0.0,
-                                    "y": 0.0
-                                },
-                                "interpolation": "Linear",
-                                "outTangent": {
-                                    "x": 0.0,
-                                    "y": 0.0
-                                },
-                                "time": 0.0,
-                                "value": 1.0
-                            }
-                        ],
-                        "name": "G"
-                    },
-                    {
-                        "defaultValue": 1.0,
-                        "keys": [
-                            {
-                                "inTangent": {
-                                    "x": 0.0,
-                                    "y": 0.0
-                                },
-                                "interpolation": "Linear",
-                                "outTangent": {
-                                    "x": 0.0,
-                                    "y": 0.0
-                                },
-                                "time": 0.0,
-                                "value": 1.0
-                            }
-                        ],
-                        "name": "B"
-                    },
-                    {
-                        "defaultValue": 1.0,
-                        "keys": [],
-                        "name": "A"
+            "lifeEndMode": "Advance",
+            "lifetime": {
+                "constant": 1.0,
+                "max": 2.0,
+                "min": 2.0,
+                "type": "Random"
+            },
+            "material": "",
+            "modules": [
+                {
+                    "id": "RotationOverLifetime",
+                    "params": {
+                        "initialMax": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "initialMin": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "speedMax": {
+                            "x": 360.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "speedMin": {
+                            "x": 360.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        }
                     }
-                ],
-                "easingType": "EaseInExpo",
-                "endColor": {
-                    "a": 0.0,
-                    "b": 0.0,
-                    "g": 0.8815165758132935,
-                    "r": 1.0
                 },
-                "startColor": {
-                    "a": 1.0,
-                    "b": 0.0,
-                    "g": 0.0,
-                    "r": 1.0
+                {
+                    "id": "GravityForce",
+                    "params": {
+                        "gravity": {
+                            "x": 0.0,
+                            "y": -31.899999618530273,
+                            "z": 0.0
+                        },
+                        "reflectGround": true,
+                        "reflectGroundY": 0.0,
+                        "restitution": 0.4050000011920929
+                    }
                 },
-                "useCurve": false
-            }
-        },
-        {
-            "id": "NoiseForce",
-            "params": {
-                "frequency": 31.711000442504883,
-                "strength": 128.0
-            }
+                {
+                    "id": "ScaleOverLifetime",
+                    "params": {
+                        "easingType": "EaseOutExpo",
+                        "endScale": {
+                            "x": 0.719998836517334,
+                            "y": 0.719998836517334,
+                            "z": 0.719998836517334
+                        },
+                        "loop": {
+                            "loopCount": 1,
+                            "type": "PingPong"
+                        },
+                        "startScale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    }
+                },
+                {
+                    "id": "ColorOverLifetime",
+                    "params": {
+                        "curveChannels": [
+                            {
+                                "defaultValue": 1.0,
+                                "keys": [],
+                                "name": "R"
+                            },
+                            {
+                                "defaultValue": 1.0,
+                                "keys": [],
+                                "name": "G"
+                            },
+                            {
+                                "defaultValue": 1.0,
+                                "keys": [],
+                                "name": "B"
+                            },
+                            {
+                                "defaultValue": 1.0,
+                                "keys": [],
+                                "name": "A"
+                            }
+                        ],
+                        "easingType": "EaseOutSine",
+                        "endColor": {
+                            "a": 1.0,
+                            "b": 0.2066158801317215,
+                            "g": 0.6949806809425354,
+                            "r": 0.5045372843742371
+                        },
+                        "loop": {
+                            "loopCount": 1,
+                            "type": "Repeat"
+                        },
+                        "startColor": {
+                            "a": 1.0,
+                            "b": 0.2066158801317215,
+                            "g": 0.6949806809425354,
+                            "r": 0.5045372843742371
+                        },
+                        "useCurve": false
+                    }
+                }
+            ],
+            "name": "First"
         }
     ],
-    "name": "defaultParticle",
     "plane": {
         "axis": "XY",
         "divideX": 1,
@@ -207,8 +219,8 @@
             "y": 0.5
         },
         "size": {
-            "x": 43.560001373291016,
-            "y": 33.93000030517578
+            "x": 1.0,
+            "y": 1.0
         }
     },
     "ring": {
@@ -219,12 +231,12 @@
         "startAngle": 0.0
     },
     "shape": "Cube",
-    "sortMode": "BackToFront",
+    "sortMode": "None",
     "space": "World3D",
     "sphere": {
         "latitudeDivide": 16,
         "longitudeDivide": 24,
-        "radius": 1.0
+        "radius": 1.2000000476837158
     },
     "trail": {
         "enabled": false,

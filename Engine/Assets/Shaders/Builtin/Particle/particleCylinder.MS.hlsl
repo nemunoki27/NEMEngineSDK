@@ -72,6 +72,8 @@ void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
 		output.position = mul(worldPos, viewProjection);
 		output.texcoord = uv * instance.uvScaleOffset.xy + instance.uvScaleOffset.zw;
 		output.color = instance.color;
+		output.emissive = instance.emissive;
+		output.materialParams = instance.materialParams;
 		verts[groupThreadID * 3u + k] = output;
 	}
 	tris[groupThreadID] = uint3(groupThreadID * 3u, groupThreadID * 3u + 1u, groupThreadID * 3u + 2u);
