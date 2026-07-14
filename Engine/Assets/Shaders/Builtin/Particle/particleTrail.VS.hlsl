@@ -27,9 +27,8 @@ VSOutput main(uint vertexID : SV_VertexID) {
 	// 頂点はワールド空間で構築済みなのでそのまま投影する
 	output.position = mul(float4(v.position, 1.0f), viewProjection);
 	output.texcoord = v.uv;
-	output.color = v.color;
-	output.emissive = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	output.materialParams = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	output.vertexColor = v.color;
+	output.particleIndex = 0xffffffffu;
 
 	return output;
 }

@@ -2,8 +2,7 @@
 #define NEM_PARTICLE_HLSLI
 
 //============================================================================
-//	Particle 共有型
-//	頂点はMeshVertexを共用し、粒子ごとのワールド行列と色で描画する
+//	Particle hlsli
 //============================================================================
 cbuffer ViewConstants : register(b0) {
 
@@ -12,27 +11,55 @@ cbuffer ViewConstants : register(b0) {
 	float _viewPad0;
 };
 
-struct ParticleInstance {
+struct ParticleGeometryData {
 
 	float4x4 worldMatrix;
-	float4 color;
-	// xyがUVスケール、zwがUVオフセット
-	float4 uvScaleOffset;
+	float4 vertexColor;
 	// 形状アニメーション用のパラメータ、形状ごとに解釈が変わる
 	float4 shapeParams;
+};
+
+struct ParticleMaterialData {
+
 	// 発光色と強さ、wが強さ
 	float4 emissive;
 	// xがアルファ棄却の閾値、yzwは予約
 	float4 materialParams;
+	// フェーズマテリアルの寿命アニメーション色
+	float4 materialColor;
+	// カラーテクスチャのUV変換行列
+	float4x4 uvMatrix;
 };
+
+StructuredBuffer<ParticleGeometryData> gParticleGeometry : register(t1);
+StructuredBuffer<ParticleMaterialData> gParticleMaterials : register(t0, space1);
 
 struct VSOutput {
 
 	float4 position : SV_POSITION;
 	float2 texcoord : TEXCOORD0;
-	float4 color : TEXCOORD1;
-	float4 emissive : TEXCOORD2;
-	float4 materialParams : TEXCOORD3;
+	float4 vertexColor : COLOR0;
+	nointerpolation uint particleIndex : PARTICLE_INDEX;
 };
+
+ParticleMaterialData GetParticleMaterial(VSOutput input) {
+
+	if (input.particleIndex != 0xffffffffu) {
+		return gParticleMaterials[input.particleIndex];
+	}
+	ParticleMaterialData material = (ParticleMaterialData)0;
+	material.materialColor = 1.0f.xxxx;
+	material.uvMatrix = float4x4(
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+	return material;
+}
+
+float2 TransformParticleUV(float2 uv, ParticleMaterialData material) {
+
+	return mul(float4(uv, 0.0f, 1.0f), material.uvMatrix).xy;
+}
 
 #endif // NEM_PARTICLE_HLSLI

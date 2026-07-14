@@ -11,7 +11,6 @@ cbuffer ParticleShapeConstants : register(b1) {
 	uint divide;
 	uint3 _pad;
 };
-StructuredBuffer<ParticleInstance> gInstances : register(t1);
 
 #define PARTICLE_GROUP_TRIANGLES 64
 
@@ -35,7 +34,7 @@ void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
 		return;
 	}
 
-	ParticleInstance instance = gInstances[groupID.y];
+	ParticleGeometryData instance = gParticleGeometry[groupID.y];
 	// 粒子ごとの形状パラメータ、x=外周半径 y=内周半径 z=開始角 w=終了角
 	const float outer = instance.shapeParams.x;
 	const float inner = instance.shapeParams.y;
@@ -69,10 +68,9 @@ void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
 		VSOutput output;
 		float4 worldPos = mul(float4(localPos, 1.0f), instance.worldMatrix);
 		output.position = mul(worldPos, viewProjection);
-		output.texcoord = uv * instance.uvScaleOffset.xy + instance.uvScaleOffset.zw;
-		output.color = instance.color;
-		output.emissive = instance.emissive;
-		output.materialParams = instance.materialParams;
+		output.texcoord = uv;
+		output.vertexColor = instance.vertexColor;
+		output.particleIndex = groupID.y;
 		verts[groupThreadID * 3u + k] = output;
 	}
 	tris[groupThreadID] = uint3(groupThreadID * 3u, groupThreadID * 3u + 1u, groupThreadID * 3u + 2u);
