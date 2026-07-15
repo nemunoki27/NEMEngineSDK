@@ -1,0 +1,17 @@
+{
+    "name": "particleCylinderMSShader",
+    "stages": [
+        {
+            "entry": "main",
+            "file": "eff000000000000c",
+            "profile": "ms_6_6",
+            "stage": "MS"
+        },
+        {
+            "entry": "main",
+            "file": "eff0000000000003",
+            "profile": "ps_6_6",
+            "stage": "PS"
+        }
+    ]
+}

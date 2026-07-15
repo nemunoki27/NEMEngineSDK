@@ -1,0 +1,12 @@
+{
+  "name": "particleHotReloadDissolveShader",
+  "stages": [
+    {
+      "stage": "PS",
+      "file": "a110000000000001",
+      "entry": "main",
+      "profile": "ps_6_6"
+    }
+  ],
+  "colorParameters": [ "edgeColor" ]
+}

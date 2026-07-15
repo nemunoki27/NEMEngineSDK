@@ -1,0 +1,6 @@
+{
+  "guid": "a110000000000004",
+  "importer": "nlohmann::json",
+  "type": "Material",
+  "version": 1
+}

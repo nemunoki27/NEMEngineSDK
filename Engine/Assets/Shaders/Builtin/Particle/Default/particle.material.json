@@ -1,0 +1,13 @@
+{
+    "domain": "Surface",
+    "usage": "Particle",
+    "name": "particle",
+    "parameters": {},
+    "passes": [
+        {
+            "passKind": "Transparent",
+            "pipeline": "eff0000000000005",
+            "preferredVariant": "GraphicsVertex"
+        }
+    ]
+}

@@ -1,0 +1,23 @@
+{
+    "name": "particleTrailShader",
+    "stages": [
+        {
+            "entry": "main",
+            "file": "eff000000000000f",
+            "profile": "vs_6_6",
+            "stage": "VS"
+        },
+        {
+            "entry": "main",
+            "file": "eff0000000000014",
+            "profile": "ms_6_6",
+            "stage": "MS"
+        },
+        {
+            "entry": "main",
+            "file": "eff0000000000003",
+            "profile": "ps_6_6",
+            "stage": "PS"
+        }
+    ]
+}

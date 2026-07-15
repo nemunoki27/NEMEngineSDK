@@ -1,0 +1,13 @@
+{
+    "domain": "UI",
+    "usage": "Particle",
+    "name": "particle2D",
+    "parameters": {},
+    "passes": [
+        {
+            "passKind": "Draw",
+            "pipeline": "eff0000000000007",
+            "preferredVariant": "GraphicsVertex"
+        }
+    ]
+}

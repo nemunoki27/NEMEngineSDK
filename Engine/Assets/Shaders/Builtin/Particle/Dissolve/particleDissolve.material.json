@@ -1,0 +1,18 @@
+{
+  "name": "particleHotReloadDissolve",
+  "domain": "Surface",
+  "usage": "Particle",
+  "passes": [
+    {
+      "passKind": "Transparent",
+      "pipeline": "a110000000000003",
+      "shaderOverride": "a110000000000002",
+      "preferredVariant": "GraphicsVertex"
+    }
+  ],
+  "parameters": {
+    "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+    "baseColorTexture": "c2ea9f4498073ab3",
+    "noiseTexture": "c2ea9f4498073ab3"
+  }
+}
