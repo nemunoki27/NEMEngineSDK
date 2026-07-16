@@ -104,7 +104,7 @@
             "material": "",
             "modules": [
                 {
-                    "id": "RotationOverLifetime",
+                    "id": "Rotation",
                     "params": {
                         "initialMax": {
                             "x": 0.0,
@@ -231,7 +231,6 @@
         "startAngle": 0.0
     },
     "shape": "Cube",
-    "sortMode": "None",
     "space": "World3D",
     "sphere": {
         "latitudeDivide": 16,
