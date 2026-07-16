@@ -26,6 +26,8 @@ struct VSInstance {
 	float2 rectMax;
 	float2 uvMin;
 	float2 uvMax;
+	float2 materialUVMin;
+	float2 materialUVMax;
 
 	float4x4 worldMatrix;
 };
@@ -44,6 +46,7 @@ VSOutput main(VSInput input, uint instanceID : SV_InstanceID) {
 	float2 localPos = lerp(instance.rectMin, instance.rectMax, input.position);
 	output.position = mul(float4(localPos, 0.0f, 1.0f), wvp);
 	output.texcoord = lerp(instance.uvMin, instance.uvMax, input.texcoord);
+	output.materialTexcoord = lerp(instance.materialUVMin, instance.materialUVMax, input.texcoord);
 	output.instanceID = instanceID;
 
 	return output;

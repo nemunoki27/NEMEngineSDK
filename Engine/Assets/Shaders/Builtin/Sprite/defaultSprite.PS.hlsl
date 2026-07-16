@@ -14,12 +14,16 @@ struct PSOutput {
 //============================================================================
 //	resources
 //============================================================================
-Texture2D<float4> gTexture : register(t1);
+Texture2D<float4> baseColorTexture : register(t0, space2);
 SamplerState gSampler : register(s0);
+
+cbuffer MaterialParameters : register(b3) {
+
+	float4 color;
+};
 
 struct PSInstance {
 
-	float4 color;
 	float4x4 uvMatrix;
 };
 StructuredBuffer<PSInstance> gPSInstances : register(t2);
@@ -32,11 +36,10 @@ PSOutput main(VSOutput input) {
 	PSInstance instance = gPSInstances[input.instanceID];
 
 	float4 transformUV = mul(float4(input.texcoord, 0.0f, 1.0f), instance.uvMatrix);
-	float4 textureColor = gTexture.Sample(gSampler, transformUV.xy);
+	float4 textureColor = baseColorTexture.Sample(gSampler, transformUV.xy);
 
 	PSOutput output;
-	output.color.rgb = textureColor.rgb * instance.color.rgb;
-	output.color.a = textureColor.a * instance.color.a;
+	output.color = textureColor * color;
 
 	return output;
 }
