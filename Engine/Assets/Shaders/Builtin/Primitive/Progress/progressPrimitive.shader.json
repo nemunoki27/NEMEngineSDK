@@ -1,0 +1,18 @@
+{
+  "name": "progressPrimitiveShader",
+  "stages": [
+    {
+      "entry": "main",
+      "file": "70a1b2c3d4e5f612",
+      "profile": "vs_6_6",
+      "stage": "VS"
+    },
+    {
+      "entry": "main",
+      "file": "70a1b2c3d4e5f622",
+      "profile": "ps_6_6",
+      "stage": "PS"
+    }
+  ],
+  "colorParameters": [ "color" ]
+}

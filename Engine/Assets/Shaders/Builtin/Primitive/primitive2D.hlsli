@@ -19,11 +19,13 @@ struct PrimitiveInstance {
 	uint flags;
 	uint3 _pad;
 };
+static const uint PRIMITIVE_INSTANCE_FLAG_FLIP_SCREEN_V = 1u << 5;
 
 struct VSOutput {
 
 	float4 position : SV_POSITION;
 	float2 texcoord : TEXCOORD0;
+	float2 localTexcoord : TEXCOORD1;
 };
 
 #endif // NEM_PRIMITIVE2D_HLSLI

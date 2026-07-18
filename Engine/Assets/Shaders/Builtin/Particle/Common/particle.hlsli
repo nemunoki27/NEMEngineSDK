@@ -23,7 +23,7 @@ struct ParticleMaterialData {
 
 	// 発光色と強さ、wが強さ
 	float4 emissive;
-	// xがアルファ棄却の閾値、yzwは予約
+	// xがアルファ棄却の閾値、yがScreen2D PlaneのV反転
 	float4 materialParams;
 	// フェーズマテリアルの寿命アニメーション色
 	float4 materialColor;
@@ -59,6 +59,9 @@ ParticleMaterialData GetParticleMaterial(VSOutput input) {
 
 float2 TransformParticleUV(float2 uv, ParticleMaterialData material) {
 
+	if (material.materialParams.y != 0.0f) {
+		uv.y = 1.0f - uv.y;
+	}
 	return mul(float4(uv, 0.0f, 1.0f), material.uvMatrix).xy;
 }
 

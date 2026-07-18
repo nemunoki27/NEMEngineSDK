@@ -9,7 +9,8 @@
 cbuffer ParticleShapeConstants : register(b1) {
 
 	uint divide;
-	uint3 _pad;
+	uint uvMode;
+	uint2 _pad;
 };
 
 #define PARTICLE_GROUP_TRIANGLES 64

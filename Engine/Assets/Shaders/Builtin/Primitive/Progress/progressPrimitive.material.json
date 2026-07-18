@@ -1,0 +1,17 @@
+{
+  "domain": "Surface",
+  "name": "progressPrimitive",
+  "parameters": {
+    "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+    "fillDirection": 0,
+    "primitiveType": 0,
+    "progress": 1.0
+  },
+  "passes": [
+    {
+      "passKind": "Draw",
+      "pipeline": "70a1b2c3d4e5f625",
+      "preferredVariant": "GraphicsVertex"
+    }
+  ]
+}

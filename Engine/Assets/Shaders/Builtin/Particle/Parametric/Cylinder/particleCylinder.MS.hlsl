@@ -9,7 +9,8 @@
 cbuffer ParticleShapeConstants : register(b1) {
 
 	uint divide;
-	uint3 _pad;
+	uint uvMode;
+	uint2 _pad;
 };
 
 #define PARTICLE_GROUP_TRIANGLES 64
@@ -64,7 +65,19 @@ void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
 		const float radius = cornerTops[k] != 0u ? topRadius : bottomRadius;
 		const float y = cornerTops[k] != 0u ? halfHeight : -halfHeight;
 		const float3 localPos = float3(cos(angle) * radius, y, sin(angle) * radius);
-		const float2 uv = float2((float)cornerSegments[k] / (float)divide, cornerTops[k] != 0u ? 0.0f : 1.0f);
+		float2 uv;
+		if (uvMode == 1u) {
+
+			const float uvRadius = cornerTops[k] != 0u ? 0.5f : 0.0f;
+			uv = float2(
+				cos(angle) * uvRadius + 0.5f,
+				-sin(angle) * uvRadius + 0.5f);
+		} else {
+
+			uv = float2(
+				(float)cornerSegments[k] / (float)divide,
+				cornerTops[k] != 0u ? 0.0f : 1.0f);
+		}
 
 		VSOutput output;
 		float4 worldPos = mul(float4(localPos, 1.0f), instance.worldMatrix);
