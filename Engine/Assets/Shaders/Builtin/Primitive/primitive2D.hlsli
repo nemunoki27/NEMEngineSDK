@@ -16,6 +16,11 @@ struct PrimitiveInstance {
 
 	float4x4 worldMatrix;
 	float4x4 uvMatrix;
+	float4 shapeParams0;
+	float4 shapeParams1;
+	float4 topColor;
+	float4 centerColor;
+	float4 bottomColor;
 	uint flags;
 	uint3 _pad;
 };

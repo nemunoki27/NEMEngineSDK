@@ -39,7 +39,7 @@ ResolvedPBRMaterial ResolvePrimitiveMaterial(VSOutput input) {
 	float2 uv = input.texcoord;
 
 	// ベースカラー = マテリアル色 × テクスチャ
-	float4 baseColor = baseColorTexture.Sample(gSampler, uv) * color;
+	float4 baseColor = baseColorTexture.Sample(gSampler, uv) * color * input.vertexColor;
 
 	// メタリックとラフネスはglTF流でB=metallic G=roughness
 	float4 mrSample = metallicRoughnessTexture.Sample(gSampler, uv);

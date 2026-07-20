@@ -15,8 +15,12 @@ struct ParticleGeometryData {
 
 	float4x4 worldMatrix;
 	float4 vertexColor;
-	// 形状アニメーション用のパラメータ、形状ごとに解釈が変わる
-	float4 shapeParams;
+	// 形状アニメーション用のパラメータと断面色
+	float4 shapeParams0;
+	float4 shapeParams1;
+	float4 topColor;
+	float4 centerColor;
+	float4 bottomColor;
 };
 
 struct ParticleMaterialData {
@@ -41,6 +45,42 @@ struct VSOutput {
 	float4 vertexColor : COLOR0;
 	nointerpolation uint particleIndex : PARTICLE_INDEX;
 };
+
+float SmoothParticleCylinderProfile(float t, float weight, bool pullEnd) {
+
+	const float smoothT = t * t * (3.0f - 2.0f * t);
+	const float power = 1.0f + saturate(weight) * 3.0f;
+	return pullEnd ? 1.0f - pow(1.0f - smoothT, power) : pow(smoothT, power);
+}
+
+float EvaluateParticleCylinderRadius(float heightT, ParticleGeometryData instance) {
+
+	if (heightT <= 0.5f) {
+
+		const float t = SmoothParticleCylinderProfile(heightT * 2.0f, instance.shapeParams1.y, false);
+		return lerp(instance.shapeParams0.z, instance.shapeParams0.y, t);
+	}
+
+	const float t = SmoothParticleCylinderProfile((heightT - 0.5f) * 2.0f, instance.shapeParams1.x, true);
+	return lerp(instance.shapeParams0.y, instance.shapeParams0.x, t);
+}
+
+float4 ResolveParticleVertexColor(float3 localPosition, ParticleGeometryData instance) {
+
+	if (instance.shapeParams1.w < 0.5f) {
+		return instance.vertexColor;
+	}
+	const float height = max(abs(instance.shapeParams0.w), 0.00001f);
+	const float heightT = saturate(localPosition.y / height + 0.5f);
+	if (heightT <= 0.5f) {
+
+		const float t = SmoothParticleCylinderProfile(heightT * 2.0f, instance.shapeParams1.y, false);
+		return instance.vertexColor * lerp(instance.bottomColor, instance.centerColor, t);
+	}
+
+	const float t = SmoothParticleCylinderProfile((heightT - 0.5f) * 2.0f, instance.shapeParams1.x, true);
+	return instance.vertexColor * lerp(instance.centerColor, instance.topColor, t);
+}
 
 ParticleMaterialData GetParticleMaterial(VSOutput input) {
 

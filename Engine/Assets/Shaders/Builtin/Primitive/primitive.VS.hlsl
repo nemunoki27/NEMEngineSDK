@@ -28,6 +28,7 @@ VSOutput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID) {
 	output.tangentSign = v.tangentSign;
 	output.texcoord = mul(float4(v.uv, 0.0f, 1.0f), instance.uvMatrix).xy;
 	output.flags = instance.flags;
+	output.vertexColor = ResolvePrimitiveVertexColor(v.position.xyz, instance);
 
 	return output;
 }

@@ -37,10 +37,10 @@ void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
 
 	ParticleGeometryData instance = gParticleGeometry[groupID.y];
 	// 粒子ごとの形状パラメータ、x=外周半径 y=内周半径 z=開始角 w=終了角
-	const float outer = instance.shapeParams.x;
-	const float inner = instance.shapeParams.y;
-	const float startAngle = instance.shapeParams.z;
-	const float angleStep = (instance.shapeParams.w - instance.shapeParams.z) / (float)divide;
+	const float outer = instance.shapeParams0.x;
+	const float inner = instance.shapeParams0.y;
+	const float startAngle = instance.shapeParams0.z;
+	const float angleStep = (instance.shapeParams0.w - instance.shapeParams0.z) / (float)divide;
 
 	const uint triangleIndex = triangleBase + groupThreadID;
 	const uint segment = triangleIndex / 2u;

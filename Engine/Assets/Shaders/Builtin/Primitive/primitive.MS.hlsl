@@ -55,6 +55,7 @@ void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
 		output.tangentSign = v.tangentSign;
 		output.texcoord = mul(float4(v.uv, 0.0f, 1.0f), instance.uvMatrix).xy;
 		output.flags = instance.flags;
+		output.vertexColor = ResolvePrimitiveVertexColor(v.position.xyz, instance);
 		verts[localTriangle * 3u + k] = output;
 	}
 	tris[localTriangle] = uint3(localTriangle * 3u, localTriangle * 3u + 1u, localTriangle * 3u + 2u);

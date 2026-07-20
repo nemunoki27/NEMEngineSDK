@@ -22,7 +22,7 @@ VSOutput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID) {
 	float4 worldPos = mul(float4(v.position.xyz, 1.0f), instance.worldMatrix);
 	output.position = mul(worldPos, viewProjection);
 	output.texcoord = v.uv;
-	output.vertexColor = instance.vertexColor;
+	output.vertexColor = ResolveParticleVertexColor(v.position.xyz, instance);
 	output.particleIndex = instanceID;
 
 	return output;
