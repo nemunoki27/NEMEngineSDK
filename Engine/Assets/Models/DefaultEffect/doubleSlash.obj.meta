@@ -1,0 +1,6 @@
+{
+  "guid": "a0488fa351ef3316",
+  "importer": "nlohmann::json",
+  "type": "Mesh",
+  "version": 1
+}
