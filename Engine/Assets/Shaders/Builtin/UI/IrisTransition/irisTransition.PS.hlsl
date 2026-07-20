@@ -30,20 +30,39 @@ cbuffer MaterialParameters : register(b3) {
 //============================================================================
 PSOutput main(VSOutput input) {
 
-	const float2 farthestCorner = max(center, viewportSize - center);
-	const float maxRadius = length(farthestCorner);
-	const float softness = max(edgeSoftness, 0.0001f);
-	const float normalizedProgress = saturate(progress);
-	const float radius = invertMask < 0.5f ?
-		lerp(maxRadius + softness, -softness, normalizedProgress) :
-		lerp(-softness, maxRadius + softness, normalizedProgress);
-	const float distanceFromCenter = length(input.position.xy - center);
-	const float radialMask = smoothstep(
-		radius - softness, radius + softness, distanceFromCenter);
-	const float mask = invertMask < 0.5f ? radialMask : 1.0f - radialMask;
+	// 中心から最も遠い画面端までの距離
+	float2 farthestCorner = max(center, viewportSize - center);
+	// 画面全体を覆うために必要な最大半径
+	float maxRadius = length(farthestCorner);
+	// ぼかし幅
+	float softness = max(edgeSoftness, 0.0001f);
+	// 進行度0.0f~1.0fに制限
+	float normalizedProgress = saturate(progress);
+
+	// 反転設定からマスクの計算方向を判定
+	bool isInvert = invertMask < 0.5f;
+
+	// 現在のマスク半径
+	float radius = 0.0f;
+	// 外側から中心へ閉じる
+	if (isInvert) {
+
+		radius = lerp(maxRadius + softness, -softness, normalizedProgress);
+	}
+	// 中心から外側へ広げる
+	else {
+
+		radius = lerp(-softness, maxRadius + softness, normalizedProgress);
+	}
+	// 現在のピクセルと中心の距離
+	float distanceFromCenter = length(input.position.xy - center);
+	// 円周のぼかしを含む距離マスク
+	float radialMask = smoothstep(radius - softness, radius + softness, distanceFromCenter);
+	// 反転設定を最終マスクへ反映
+	float mask = isInvert ? radialMask : 1.0f - radialMask;
 
 	PSOutput output;
-	output.color = float4(
-		transitionColor.rgb, transitionColor.a * mask);
+	// 遮蔽色へマスクの濃度を適用
+	output.color = float4(transitionColor.rgb, transitionColor.a * mask);
 	return output;
 }
