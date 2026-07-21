@@ -6,7 +6,10 @@ param(
     [string]$ScriptCoreProject = "",
 
     [Parameter(Mandatory = $true)]
-    [string]$GameScriptsProject
+    [string]$GameScriptsProject,
+
+    [Parameter(Mandatory = $false)]
+    [string]$GameScriptsSolutionFolder = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -74,14 +77,70 @@ function Test-SolutionProjectPath {
     return Test-Path -LiteralPath $fullPath
 }
 
+function Convert-ToSolutionFolderName {
+    param([string]$FolderName)
+
+    if ([string]::IsNullOrWhiteSpace($FolderName)) {
+        return ""
+    }
+
+    $normalized = $FolderName.Replace("\", "/").Trim("/")
+    if ([string]::IsNullOrWhiteSpace($normalized)) {
+        return ""
+    }
+    return "/$normalized/"
+}
+
+function New-DeterministicProjectId {
+    param([string]$RelativePath)
+
+    $normalized = "NEMEngine.GameScripts:" + $RelativePath.Replace("/", "\").ToLowerInvariant()
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($normalized))
+    }
+    finally {
+        $sha256.Dispose()
+    }
+
+    $guidBytes = New-Object byte[] 16
+    [System.Array]::Copy($hash, $guidBytes, $guidBytes.Length)
+    return ([System.Guid]::new($guidBytes)).ToString().ToUpperInvariant()
+}
+
 [xml]$xml = Get-Content -LiteralPath $slnxFullPath -Raw
 $solution = $xml.Solution
+
+function Get-OrCreateSolutionFolder {
+    param([string]$FolderName)
+
+    $normalized = Convert-ToSolutionFolderName $FolderName
+    if ([string]::IsNullOrWhiteSpace($normalized)) {
+        return $solution
+    }
+
+    foreach ($folder in $solution.SelectNodes("//Folder")) {
+        if ($folder.Name -ieq $normalized) {
+            return $folder
+        }
+    }
+
+    $node = $xml.CreateElement("Folder")
+    $node.SetAttribute("Name", $normalized)
+    [void]$solution.AppendChild($node)
+    return $node
+}
 
 function Add-ProjectIfMissing {
     param(
         [string]$ProjectPath,
-        [string]$ProjectId
+        [string]$ProjectId,
+        [string]$SolutionFolder = ""
     )
+
+    if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
+        return
+    }
 
     $relativePath = Convert-ToSolutionRelativePath $ProjectPath
     if (-not (Test-SolutionProjectPath $relativePath)) {
@@ -89,8 +148,18 @@ function Add-ProjectIfMissing {
         return
     }
 
-    foreach ($project in $solution.SelectNodes("Project")) {
+    if ([string]::IsNullOrWhiteSpace($ProjectId)) {
+        $ProjectId = New-DeterministicProjectId $relativePath
+    }
+    $parent = Get-OrCreateSolutionFolder $SolutionFolder
+
+    foreach ($project in $solution.SelectNodes("//Project")) {
         if ($project.Path -ieq $relativePath) {
+            $project.SetAttribute("Id", $ProjectId)
+            if (-not [object]::ReferenceEquals($project.ParentNode, $parent)) {
+                [void]$parent.AppendChild($project)
+                Write-Host "[OK] Moved C# project in solution: $relativePath"
+            }
             return
         }
     }
@@ -99,18 +168,27 @@ function Add-ProjectIfMissing {
     $node.SetAttribute("Path", $relativePath)
     $node.SetAttribute("Id", $ProjectId)
 
-    $firstFolder = $solution.SelectSingleNode("Folder")
-    if ($null -ne $firstFolder) {
-        [void]$solution.InsertBefore($node, $firstFolder)
+    if ([object]::ReferenceEquals($parent, $solution)) {
+        $firstFolder = $solution.SelectSingleNode("Folder")
+        if ($null -ne $firstFolder) {
+            [void]$solution.InsertBefore($node, $firstFolder)
+        } else {
+            [void]$solution.AppendChild($node)
+        }
     } else {
-        [void]$solution.AppendChild($node)
+        [void]$parent.AppendChild($node)
     }
 
     Write-Host "[OK] Added C# project to solution: $relativePath"
 }
 
 Add-ProjectIfMissing $ScriptCoreProject "A10F5DB5-63D5-4B9E-9A5D-9AB2EED2E710"
-Add-ProjectIfMissing $GameScriptsProject "91B80E31-08F4-4C5E-9A06-5F4E0B9D973E"
+$gameScriptsProjectId = if ([string]::IsNullOrWhiteSpace($GameScriptsSolutionFolder)) {
+    "91B80E31-08F4-4C5E-9A06-5F4E0B9D973E"
+} else {
+    ""
+}
+Add-ProjectIfMissing $GameScriptsProject $gameScriptsProjectId $GameScriptsSolutionFolder
 
 $settings = [System.Xml.XmlWriterSettings]::new()
 $settings.Indent = $true

@@ -33,7 +33,6 @@
         "topRadius": 1.0,
         "uvMode": "None"
     },
-    "duration": 2.0,
     "emitter": {
         "boxFaceNegX": true,
         "boxFaceNegY": true,
