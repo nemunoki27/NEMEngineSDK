@@ -12,7 +12,7 @@
   ],
   "parameters": {
     "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
-    "baseColorTexture": "c2ea9f4498073ab3",
-    "noiseTexture": "c2ea9f4498073ab3"
+    "baseColorTexture": "",
+    "noiseTexture": ""
   }
 }
