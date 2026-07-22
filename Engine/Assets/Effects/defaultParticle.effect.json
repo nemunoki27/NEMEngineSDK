@@ -1,246 +1,247 @@
 {
-    "billboardAxes": [],
-    "crossPlane": {
-        "pivot": {
-            "x": 0.5,
-            "y": 0.5
-        },
-        "planeCount": 2,
-        "size": {
-            "x": 1.0,
-            "y": 1.0
-        }
+    "groupEmission": {
+        "interval": 1.0,
+        "mode": "Independent",
+        "waitForCompletion": true
     },
-    "cube": {
-        "pivot": {
-            "x": 0.5,
-            "y": 0.5,
-            "z": 0.5
-        },
-        "size": {
-            "x": 1.8699994087219238,
-            "y": 1.8699994087219238,
-            "z": 1.8699994087219238
-        }
-    },
-    "cylinder": {
-        "bottomRadius": 1.0,
-        "cap": "Both",
-        "height": 2.0,
-        "heightDivide": 1,
-        "maxAngle": 6.2831854820251465,
-        "radialDivide": 16,
-        "topRadius": 1.0,
-        "uvMode": "None"
-    },
-    "emitter": {
-        "boxFaceNegX": true,
-        "boxFaceNegY": true,
-        "boxFaceNegZ": true,
-        "boxFacePosX": true,
-        "boxFacePosY": true,
-        "boxFacePosZ": true,
-        "boxSize": {
-            "x": 1.0,
-            "y": 1.0,
-            "z": 1.0
-        },
-        "circleArc": 360.0,
-        "circleRadius": 1.850000023841858,
-        "coneAngle": 25.0,
-        "coneRadius": 0.5,
-        "emitCount": {
-            "constant": 1,
-            "max": 1,
-            "min": 1,
-            "type": "Constant"
-        },
-        "emitInterval": 0.47099998593330383,
-        "maxParticles": 1024,
-        "pointDirection": {
-            "x": 0.0,
-            "y": 1.0,
-            "z": 0.0
-        },
-        "rectEdgeNegX": true,
-        "rectEdgeNegY": true,
-        "rectEdgePosX": true,
-        "rectEdgePosY": true,
-        "rectSize": {
-            "x": 1.0,
-            "y": 1.0
-        },
-        "shape": "Point",
-        "speed": {
-            "constant": 16.0,
-            "max": 24.0,
-            "min": 24.0,
-            "type": "Constant"
-        },
-        "sphereRadius": 0.5,
-        "torusRadius": 1.0,
-        "torusThickness": 0.20000000298023224
-    },
-    "hemisphere": {
-        "bottomCap": true,
-        "latitudeDivide": 8,
-        "longitudeDivide": 24,
-        "radius": 1.0
-    },
-    "looping": true,
-    "material": "eff0000000000006",
-    "model": "",
-    "name": "defaultParticle",
-    "phases": [
+    "groups": [
         {
-            "lifeEndMode": "Advance",
-            "lifetime": {
-                "constant": 1.0,
-                "max": 2.0,
-                "min": 2.0,
-                "type": "Random"
+            "billboardAxes": [
+                "X",
+                "Y",
+                "Z"
+            ],
+            "blendMode": "Add",
+            "crossPlane": {
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "planeCount": 2,
+                "size": {
+                    "x": 1.0,
+                    "y": 1.0
+                }
             },
+            "cube": {
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5,
+                    "z": 0.5
+                },
+                "size": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "cylinder": {
+                "bottomColor": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "bottomRadius": 1.0,
+                "bottomRadiusWeight": 0.0,
+                "cap": "Both",
+                "centerColor": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "centerRadius": 1.0,
+                "height": 2.0,
+                "heightDivide": 8,
+                "maxAngleDegrees": 360.0,
+                "radialDivide": 16,
+                "topColor": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "topRadius": 1.0,
+                "topRadiusWeight": 0.0,
+                "uvMode": "None"
+            },
+            "emitter": {
+                "boxFaceNegX": true,
+                "boxFaceNegY": true,
+                "boxFaceNegZ": true,
+                "boxFacePosX": true,
+                "boxFacePosY": true,
+                "boxFacePosZ": true,
+                "boxSize": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "circleAngleMax": 360.0,
+                "circleAngleMin": 0.0,
+                "circleClockwise": false,
+                "circleRadius": 1.0,
+                "circleSpawnMode": "Random",
+                "circleStepAngle": 10.0,
+                "circleUsePrevSegmentDirectionOnWrap": false,
+                "circleVelocityMode": "Normal",
+                "coneAngle": 25.0,
+                "coneRadius": 0.5,
+                "emitCount": {
+                    "constant": 4,
+                    "max": 4,
+                    "min": 4,
+                    "type": "Constant"
+                },
+                "emitInterval": 0.10000000149011612,
+                "emitOffset": {
+                    "constant": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "max": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "min": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "type": "Constant"
+                },
+                "maxParticles": 1024,
+                "pointDirection": {
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "rectEdgeNegX": true,
+                "rectEdgeNegY": true,
+                "rectEdgePosX": true,
+                "rectEdgePosY": true,
+                "rectSize": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "shape": "Sphere",
+                "speed": {
+                    "constant": 1.600000023841858,
+                    "max": 1.600000023841858,
+                    "min": 1.600000023841858,
+                    "type": "Constant"
+                },
+                "sphereRadius": 0.5,
+                "torusRadius": 1.0,
+                "torusThickness": 0.20000000298023224
+            },
+            "enabled": true,
+            "hemisphere": {
+                "bottomCap": true,
+                "latitudeDivide": 8,
+                "longitudeDivide": 24,
+                "radius": 1.0
+            },
+            "id": "70381fdbacd71bb3",
+            "looping": true,
             "material": "",
-            "modules": [
+            "model": "",
+            "name": "default",
+            "phases": [
                 {
-                    "id": "Rotation",
-                    "params": {
-                        "initialMax": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                    "lifeEndMode": "Kill",
+                    "lifetime": {
+                        "constant": 1.0,
+                        "max": 1.0,
+                        "min": 1.0,
+                        "type": "Constant"
+                    },
+                    "material": "",
+                    "materialSettings": {
+                        "baseColorTexture": "",
+                        "textureOverrides": {}
+                    },
+                    "modules": [
+                        {
+                            "id": "SizeOverLifetime",
+                            "params": {}
                         },
-                        "initialMin": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "speedMax": {
-                            "x": 360.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "speedMin": {
-                            "x": 360.0,
-                            "y": 0.0,
-                            "z": 0.0
+                        {
+                            "id": "ColorOverLifetime",
+                            "params": {}
                         }
-                    }
-                },
-                {
-                    "id": "GravityForce",
-                    "params": {
-                        "gravity": {
-                            "x": 0.0,
-                            "y": -31.899999618530273,
-                            "z": 0.0
-                        },
-                        "reflectGround": true,
-                        "reflectGroundY": 0.0,
-                        "restitution": 0.4050000011920929
-                    }
-                },
-                {
-                    "id": "ScaleOverLifetime",
-                    "params": {
-                        "easingType": "EaseOutExpo",
-                        "endScale": {
-                            "x": 0.719998836517334,
-                            "y": 0.719998836517334,
-                            "z": 0.719998836517334
-                        },
-                        "loop": {
-                            "loopCount": 1,
-                            "type": "PingPong"
-                        },
-                        "startScale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        }
-                    }
-                },
-                {
-                    "id": "ColorOverLifetime",
-                    "params": {
-                        "curveChannels": [
-                            {
-                                "defaultValue": 1.0,
-                                "keys": [],
-                                "name": "R"
-                            },
-                            {
-                                "defaultValue": 1.0,
-                                "keys": [],
-                                "name": "G"
-                            },
-                            {
-                                "defaultValue": 1.0,
-                                "keys": [],
-                                "name": "B"
-                            },
-                            {
-                                "defaultValue": 1.0,
-                                "keys": [],
-                                "name": "A"
-                            }
-                        ],
-                        "easingType": "EaseOutSine",
-                        "endColor": {
-                            "a": 1.0,
-                            "b": 0.2066158801317215,
-                            "g": 0.6949806809425354,
-                            "r": 0.5045372843742371
-                        },
-                        "loop": {
-                            "loopCount": 1,
-                            "type": "Repeat"
-                        },
-                        "startColor": {
-                            "a": 1.0,
-                            "b": 0.2066158801317215,
-                            "g": 0.6949806809425354,
-                            "r": 0.5045372843742371
-                        },
-                        "useCurve": false
+                    ],
+                    "name": "Phase 1",
+                    "parentSettings": {
+                        "entityLocalFileID": "",
+                        "ignoreParentRotation": false,
+                        "ignoreParentScale": true,
+                        "keepWorldOnDetach": true,
+                        "useEmitter": false
                     }
                 }
             ],
-            "name": "First"
+            "plane": {
+                "axis": "XY",
+                "divideX": 1,
+                "divideY": 1,
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "size": {
+                    "x": 1.0,
+                    "y": 1.0
+                }
+            },
+            "queue": "Transparent",
+            "ring": {
+                "divide": 16,
+                "endAngle": 360.0,
+                "innerRadius": 0.5,
+                "outerRadius": 1.0,
+                "startAngle": 0.0
+            },
+            "shape": "Plane",
+            "sphere": {
+                "latitudeDivide": 16,
+                "longitudeDivide": 24,
+                "radius": 1.0
+            },
+            "trail": {
+                "continueUpdateAfterParticleDeath": true,
+                "drawSource": true,
+                "enabled": false,
+                "endColor": {
+                    "a": 0.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "endWidth": 0.10000000149011612,
+                "keepAfterParticleDeath": false,
+                "material": "",
+                "materialSettings": {
+                    "baseColorTexture": "",
+                    "textureOverrides": {}
+                },
+                "maxPoints": 16,
+                "minDistance": 0.05000000074505806,
+                "pointLifetime": 0.0,
+                "startColor": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "startWidth": 0.10000000149011612
+            }
         }
     ],
-    "plane": {
-        "axis": "XY",
-        "divideX": 1,
-        "divideY": 1,
-        "pivot": {
-            "x": 0.5,
-            "y": 0.5
-        },
-        "size": {
-            "x": 1.0,
-            "y": 1.0
-        }
-    },
-    "ring": {
-        "divide": 16,
-        "endAngle": 360.0,
-        "innerRadius": 0.14000000059604645,
-        "outerRadius": 0.9100000262260437,
-        "startAngle": 0.0
-    },
-    "shape": "Cube",
+    "name": "defaultParticle",
     "space": "World3D",
-    "sphere": {
-        "latitudeDivide": 16,
-        "longitudeDivide": 24,
-        "radius": 1.2000000476837158
-    },
-    "trail": {
-        "enabled": false,
-        "maxPoints": 16,
-        "minDistance": 0.0010000000474974513,
-        "width": 0.050999999046325684
-    },
-    "version": 1
+    "version": 2
 }

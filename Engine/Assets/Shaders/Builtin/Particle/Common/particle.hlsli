@@ -48,8 +48,8 @@ struct VSOutput {
 
 float SmoothParticleCylinderProfile(float t, float weight, bool pullEnd) {
 
-	const float smoothT = t * t * (3.0f - 2.0f * t);
-	const float power = 1.0f + saturate(weight) * 3.0f;
+	float smoothT = t * t * (3.0f - 2.0f * t);
+	float power = 1.0f + saturate(weight) * 3.0f;
 	return pullEnd ? 1.0f - pow(1.0f - smoothT, power) : pow(smoothT, power);
 }
 
@@ -57,11 +57,11 @@ float EvaluateParticleCylinderRadius(float heightT, ParticleGeometryData instanc
 
 	if (heightT <= 0.5f) {
 
-		const float t = SmoothParticleCylinderProfile(heightT * 2.0f, instance.shapeParams1.y, false);
+		float t = SmoothParticleCylinderProfile(heightT * 2.0f, instance.shapeParams1.y, false);
 		return lerp(instance.shapeParams0.z, instance.shapeParams0.y, t);
 	}
 
-	const float t = SmoothParticleCylinderProfile((heightT - 0.5f) * 2.0f, instance.shapeParams1.x, true);
+	float t = SmoothParticleCylinderProfile((heightT - 0.5f) * 2.0f, instance.shapeParams1.x, true);
 	return lerp(instance.shapeParams0.y, instance.shapeParams0.x, t);
 }
 
@@ -70,15 +70,15 @@ float4 ResolveParticleVertexColor(float3 localPosition, ParticleGeometryData ins
 	if (instance.shapeParams1.w < 0.5f) {
 		return instance.vertexColor;
 	}
-	const float height = max(abs(instance.shapeParams0.w), 0.00001f);
-	const float heightT = saturate(localPosition.y / height + 0.5f);
+	float height = max(abs(instance.shapeParams0.w), 0.00001f);
+	float heightT = saturate(localPosition.y / height + 0.5f);
 	if (heightT <= 0.5f) {
 
-		const float t = SmoothParticleCylinderProfile(heightT * 2.0f, instance.shapeParams1.y, false);
+		float t = SmoothParticleCylinderProfile(heightT * 2.0f, instance.shapeParams1.y, false);
 		return instance.vertexColor * lerp(instance.bottomColor, instance.centerColor, t);
 	}
 
-	const float t = SmoothParticleCylinderProfile((heightT - 0.5f) * 2.0f, instance.shapeParams1.x, true);
+	float t = SmoothParticleCylinderProfile((heightT - 0.5f) * 2.0f, instance.shapeParams1.x, true);
 	return instance.vertexColor * lerp(instance.centerColor, instance.topColor, t);
 }
 
@@ -87,13 +87,7 @@ ParticleMaterialData GetParticleMaterial(VSOutput input) {
 	if (input.particleIndex != 0xffffffffu) {
 		return gParticleMaterials[input.particleIndex];
 	}
-	ParticleMaterialData material = (ParticleMaterialData)0;
-	material.materialColor = 1.0f.xxxx;
-	material.uvMatrix = float4x4(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f);
+	ParticleMaterialData material = (ParticleMaterialData) 0;
 	return material;
 }
 
@@ -104,5 +98,4 @@ float2 TransformParticleUV(float2 uv, ParticleMaterialData material) {
 	}
 	return mul(float4(uv, 0.0f, 1.0f), material.uvMatrix).xy;
 }
-
 #endif // NEM_PARTICLE_HLSLI

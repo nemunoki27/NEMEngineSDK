@@ -20,12 +20,14 @@ struct PSOutput {
 PSOutput main(VSOutput input) {
 
 	ParticleMaterialData material = GetParticleMaterial(input);
-	const float2 uv = TransformParticleUV(input.texcoord, material);
-	// 粒子色をテクスチャへ掛ける、ライティングは行わない
+
+	// UV
+	float2 uv = TransformParticleUV(input.texcoord, material);
+	// 色計算
 	float4 baseColor = baseColorTexture.Sample(gSampler, uv) * input.vertexColor * material.materialColor;
-	// アルファ棄却、閾値未満のピクセルは描かない
+	// アルファ棄却
 	clip(baseColor.a - material.materialParams.x);
-	// 発光を加算する
+	// 発光加算
 	baseColor.rgb += material.emissive.rgb * material.emissive.w;
 
 	PSOutput output;
