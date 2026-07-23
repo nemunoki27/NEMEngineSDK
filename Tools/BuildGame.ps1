@@ -24,7 +24,7 @@ function Get-MSBuildPath {
 
     $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
     if (Test-Path -LiteralPath $vswhere) {
-        $found = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" |
+        $found = & $vswhere -latest -prerelease -products * -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" |
             Select-Object -First 1
         if ($found -and (Test-Path -LiteralPath $found)) {
             return $found
