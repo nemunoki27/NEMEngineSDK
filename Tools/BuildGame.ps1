@@ -63,7 +63,7 @@ try {
         throw "Game build manifest was not found"
     }
 
-    $manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
+    $manifest = Get-Content -LiteralPath $ManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $projectPath = [System.IO.Path]::GetFullPath([string]$manifest.projectPath)
     $sourceRuntime = [System.IO.Path]::GetFullPath([string]$manifest.sourceRuntime)
     $outputRoot = [System.IO.Path]::GetFullPath([string]$manifest.outputRoot)
