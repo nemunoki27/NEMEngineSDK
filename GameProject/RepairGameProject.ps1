@@ -108,6 +108,32 @@ function Copy-TemplateFile([string]$Source, [string]$Destination) {
     return $true
 }
 
+function Ensure-ProjectDescriptor([string]$ResolvedGameRoot, [string]$GameName) {
+    $appRoot = Join-Path $ResolvedGameRoot "Project\$GameName"
+    if (-not (Test-Path -LiteralPath $appRoot)) {
+        throw "Game application directory was not found: $appRoot"
+    }
+
+    $descriptorPath = Join-Path $appRoot ($GameName + ".nemproject")
+    if (-not (Test-Path -LiteralPath $descriptorPath)) {
+        $descriptor = [ordered]@{
+            schemaVersion = 1
+            projectGuid = [Guid]::NewGuid().ToString("N")
+            name = $GameName
+            sceneStorage = "ExternalActors"
+            assetsDirectory = "GameAssets"
+            packagesDirectory = "Packages"
+            projectSettingsDirectory = "ProjectSettings"
+        }
+        Write-Utf8NoBom $descriptorPath (($descriptor | ConvertTo-Json) + [Environment]::NewLine)
+        Write-Host "  Created: Project\$GameName\$GameName.nemproject"
+    }
+
+    foreach ($directoryName in @("GameAssets", "Packages", "ProjectSettings")) {
+        New-Item -ItemType Directory -Force -Path (Join-Path $appRoot $directoryName) | Out-Null
+    }
+}
+
 function Sync-PremakeFiles([string]$ResolvedGameRoot, [string]$ResolvedSupportRoot, [string]$GameName) {
     $gamePremakeDir = Join-Path $ResolvedGameRoot "Premake"
     New-Item -ItemType Directory -Force -Path $gamePremakeDir | Out-Null
@@ -163,6 +189,7 @@ Write-Host "  SupportRoot : $resolvedSupportRoot"
 Write-Host "  GameName    : $gameName"
 Write-Host ""
 
+Ensure-ProjectDescriptor $resolvedGameRoot $gameName
 Sync-PremakeFiles $resolvedGameRoot $resolvedSupportRoot $gameName
 Sync-RootSupportFiles $resolvedGameRoot $resolvedSupportRoot
 

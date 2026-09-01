@@ -31,6 +31,13 @@ if not exist "%NEM_SDK_ROOT%\Premake\premake5.exe" (
     exit /b 1
 )
 
+if not exist "%NEM_SDK_ROOT%\Editor\Debug\NEMEditor.exe" (
+    echo [ERROR] NEMEditor was not found in SDK: %NEM_SDK_ROOT%\Editor\Debug\NEMEditor.exe
+    echo         Rebuild the SDK with the current SDK creation tool.
+    popd
+    exit /b 1
+)
+
 echo ===== Cleanup Old Project Files =====
 rem 旧 .slnx は名前に依存せず一掃する。cloneフォルダ名と project 名がズレていても確実に作り直す
 if exist "%GAME_ROOT%\Project\*.slnx" del /q "%GAME_ROOT%\Project\*.slnx"
@@ -75,7 +82,7 @@ for %%F in ("%GENERATED_SLNX%") do set "GAME_NAME=%%~nF"
 
 rem Add the C# script project to the solution and set the debugger working directory.
 if exist "%NEM_SDK_ROOT%\Premake\patch_script_slnx.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%NEM_SDK_ROOT%\Premake\patch_script_slnx.ps1" -SlnxPath "%GAME_ROOT%\Project\%GAME_NAME%.slnx" -GameScriptsProject "%GAME_ROOT%\Project\%GAME_NAME%\Scripts\GameScripts.csproj"
-if exist "%NEM_SDK_ROOT%\Premake\patch_vcxproj_user_debugger.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%NEM_SDK_ROOT%\Premake\patch_vcxproj_user_debugger.ps1" -ProjectUserPath "%GAME_ROOT%\Project\%GAME_NAME%\%GAME_NAME%.vcxproj.user" -WorkingDirectory ".."
+if exist "%NEM_SDK_ROOT%\Premake\patch_vcxproj_user_debugger.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%NEM_SDK_ROOT%\Premake\patch_vcxproj_user_debugger.ps1" -ProjectUserPath "%GAME_ROOT%\Project\%GAME_NAME%\%GAME_NAME%.vcxproj.user" -WorkingDirectory ".." -DebuggerCommand "%NEM_SDK_ROOT%\Editor\$(Configuration)\NEMEditor.exe"
 
 popd
 endlocal

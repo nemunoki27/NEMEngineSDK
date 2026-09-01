@@ -1,0 +1,10 @@
+{
+    "schemaVersion":  1,
+    "configuration":  "Debug",
+    "files":  [
+                  "dxcompiler.dll",
+                  "dxil.dll",
+                  "nethost.dll",
+                  "WinPixEventRuntime.dll"
+              ]
+}

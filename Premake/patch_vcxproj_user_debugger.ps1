@@ -4,6 +4,9 @@
 
     [string]$WorkingDirectory = "..",
 
+    # 空でなければF5の起動先を指定する、SDKゲームは構成別NEMEditor.exeを直接起動する
+    [string]$DebuggerCommand = "",
+
     [string]$DebuggerType = "NativeWithManagedCore",
 
     # デバッガ起動時に渡す追加の環境変数(例: "NEMENGINE_ROOT=C:\...\Project")。空なら設定しない。
@@ -77,6 +80,10 @@ foreach ($condition in $conditions) {
     Set-ChildValue -Parent $group -Name "DebuggerFlavor" -Value "WindowsLocalDebugger"
     Set-ChildValue -Parent $group -Name "LocalDebuggerDebuggerType" -Value $DebuggerType
 
+    if (-not [string]::IsNullOrWhiteSpace($DebuggerCommand)) {
+        Set-ChildValue -Parent $group -Name "LocalDebuggerCommand" -Value $DebuggerCommand
+    }
+
     # 既存の環境変数(VS既定)も引き継げるよう $(LocalDebuggerEnvironment) を末尾に残す
     if (-not [string]::IsNullOrWhiteSpace($EnvironmentVariables)) {
         Set-ChildValue -Parent $group -Name "LocalDebuggerEnvironment" -Value ($EnvironmentVariables + "`n" + '$(LocalDebuggerEnvironment)')
@@ -100,6 +107,10 @@ foreach ($condition in $conditions) {
 
     if ($group.LocalDebuggerDebuggerType -ne $DebuggerType) {
         throw "Debugger type verification failed for $condition. Actual value: $($group.LocalDebuggerDebuggerType)"
+    }
+    if (-not [string]::IsNullOrWhiteSpace($DebuggerCommand) -and
+        $group.LocalDebuggerCommand -ne $DebuggerCommand) {
+        throw "Debugger command verification failed for $condition. Actual value: $($group.LocalDebuggerCommand)"
     }
 }
 

@@ -1,0 +1,17 @@
+{
+  "name": "PickMeshRaster",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "4e454d4153534554f6485468f3b0f105",
+      "entry": "main",
+      "profile": "vs_6_6"
+    },
+    {
+      "stage": "PS",
+      "file": "4e454d41535345548d50435034671c2a",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}
