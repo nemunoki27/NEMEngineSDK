@@ -20,7 +20,7 @@
                 "frontCounterClockwise": false
             },
             "requiresMeshShader": true,
-            "shader": "eff0000000000011",
+            "shader": "4e454d4153534554eff0000000000011",
             "staticSamplers": [
                 {
                     "addressU": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",
@@ -52,7 +52,7 @@
                 "fillMode": "D3D12_FILL_MODE_SOLID",
                 "frontCounterClockwise": false
             },
-            "shader": "eff0000000000011",
+            "shader": "4e454d4153534554eff0000000000011",
             "staticSamplers": [
                 {
                     "addressU": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",

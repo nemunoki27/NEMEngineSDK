@@ -39,8 +39,10 @@ ResolvedPBRMaterial ResolvePBRMaterial(VSOutput input) {
 
 	// メタリックとラフネスは係数にmetallicRoughnessテクスチャを掛ける、glTF流でB=metallic G=roughness
 	float4 mrSample = SamplePBRTexture(params.metallicRoughnessTexture, uv, 1.0f.xxxx);
-	float metallic = saturate(params.Metallic * mrSample.b);
-	float roughness = saturate(params.Roughness * mrSample.g);
+	float metallicSample = SamplePBRTexture(params.metallicTexture, uv, 1.0f.xxxx).r;
+	float roughnessSample = SamplePBRTexture(params.roughnessTexture, uv, 1.0f.xxxx).r;
+	float metallic = saturate(params.metallic * mrSample.b * metallicSample);
+	float roughness = saturate(params.roughness * mrSample.g * roughnessSample);
 	roughness = max(roughness, 0.04f);
 
 	// AOはocclusionテクスチャから取る、未指定なら白で1になる
@@ -63,45 +65,10 @@ ResolvedPBRMaterial ResolvePBRMaterial(VSOutput input) {
 	return m;
 }
 
-// 半透明の前方描画で使う、全ライトのPBRライティングを合算する
-float3 EvaluateForwardPBRLighting(VSOutput input, ResolvedPBRMaterial m) {
+float ResolveMeshPBRAlphaClip(VSOutput input) {
 
-	// ライティングしないサーフェイスはベースカラーと発光をそのまま出す
-	uint instanceFlags = gMeshInstances[input.instanceID].flags;
-	if ((instanceFlags & MESH_INSTANCE_FLAG_LIGHTING) == 0u) {
-		return m.baseColor.rgb + m.emissive;
-	}
-
-	float3 V = normalize(renderCameraPos - input.worldPos);
-	float3 F0 = lerp(0.04f.xxx, m.baseColor.rgb, m.metallic);
-
-	float3 Lo = 0.0f.xxx;
-	[loop]
-	for (uint i = 0; i < directionalCount; ++i) {
-
-		Lo += EvaluatePBRDirectionalLight(gDirectionalLights[i], m.N, V,
-			m.baseColor.rgb, m.metallic, m.roughness, F0);
-	}
-
-	[loop]
-	for (uint pi = 0; pi < pointCount; ++pi) {
-
-		Lo += EvaluatePBRPointLight(gPointLights[pi], input.worldPos, m.N, V,
-			m.baseColor.rgb, m.metallic, m.roughness, F0);
-	}
-	[loop]
-	for (uint si = 0; si < spotCount; ++si) {
-
-		Lo += EvaluatePBRSpotLight(gSpotLights[si], input.worldPos, m.N, V,
-			m.baseColor.rgb, m.metallic, m.roughness, F0);
-	}
-
-	// 環境光はAOで減衰、環境光を受けないサーフェイスは加算しない
-	float3 ambient = 0.0f.xxx;
-	if ((instanceFlags & MESH_INSTANCE_FLAG_RECEIVE_IBL) != 0u) {
-		ambient = 0.03f * m.baseColor.rgb * m.ao;
-	}
-
-	return Lo + ambient + m.emissive;
+	return GetInstanceMeshMaterialParameters(
+		input.instanceID, input.subMeshIndex).alphaClip;
 }
+
 #endif // NEM_MESH_PBR_HLSLI

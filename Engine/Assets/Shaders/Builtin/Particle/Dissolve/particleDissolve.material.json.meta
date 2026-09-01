@@ -1,6 +1,8 @@
 {
-  "guid": "a110000000000004",
-  "importer": "nlohmann::json",
+  "schemaVersion": 2,
+  "guid": "4e454d4153534554a110000000000004",
   "type": "Material",
-  "version": 1
+  "importer": "MaterialImporter",
+  "importerVersion": 1,
+  "settings": {}
 }

@@ -3,25 +3,25 @@
   "stages": [
     {
       "stage": "VS",
-      "file": "4263ff3ca807a94c",
+      "file": "4e454d41535345544263ff3ca807a94c",
       "entry": "main",
-      "profile": "vs_6_0"
+      "profile": "vs_6_6"
     },
     {
       "stage": "AS",
-      "file": "c04c76a103a8b3ab",
+      "file": "4e454d415353455406811f98f605bb52",
       "entry": "main",
       "profile": "as_6_6"
     },
     {
       "stage": "MS",
-      "file": "d9018a90ed8cabcb",
+      "file": "4e454d4153534554109772a2d84dd757",
       "entry": "main",
       "profile": "ms_6_6"
     },
     {
       "stage": "PS",
-      "file": "b8ef63bac1805290",
+      "file": "4e454d4153534554b8ef63bac1805290",
       "entry": "mainTransparent",
       "profile": "ps_6_6"
     }

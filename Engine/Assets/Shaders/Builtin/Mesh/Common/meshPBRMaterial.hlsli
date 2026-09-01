@@ -12,10 +12,19 @@ struct MeshMaterialParameters {
 	uint emissiveTexture;
 	uint metallicRoughnessTexture;
 
+	uint metallicTexture;
+	uint roughnessTexture;
 	uint occlusionTexture;
-	float Metallic;
-	float Roughness;
+	uint displacementTexture;
+
+	float metallic;
+	float roughness;
 	float emissiveIntensity;
+	float alphaClip;
+
+	float displacementMidpoint;
+	float displacementScale;
+	float2 _padding;
 };
 StructuredBuffer<MeshMaterialParameters> gMeshMaterialParameters : register(t0, space3);
 

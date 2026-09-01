@@ -1,0 +1,11 @@
+{
+  "name": "BuildDepthPyramid",
+  "stages": [
+    {
+      "stage": "CS",
+      "file": "4e454d4153534554d9a171e5f80901a1",
+      "entry": "main",
+      "profile": "cs_6_0"
+    }
+  ]
+}

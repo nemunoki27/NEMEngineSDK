@@ -1,5 +1,5 @@
 -- GameProject premake: prebuilt NEMEngine SDK を参照してゲームアプリだけを生成する
--- エンジンソース・外部ライブラリには一切触れない（SDKのNEMEngine.dll/import lib/公開ヘッダのみ使用）
+-- エンジンソース・外部ライブラリには一切触れない（SDKのNEMRuntime.dll/import lib/公開ヘッダのみ使用）
 
 newoption {
     trigger = "engine-root",

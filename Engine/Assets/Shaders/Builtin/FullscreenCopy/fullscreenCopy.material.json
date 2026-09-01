@@ -4,17 +4,17 @@
   "passes": [
     {
       "passKind": "Blit",
-      "pipeline": "0ac10387ac2d0367",
+      "pipeline": "4e454d41535345540ac10387ac2d0367",
       "preferredVariant": "GraphicsVertex"
     },
     {
       "passKind": "PostProcess",
-      "pipeline": "0ac10387ac2d0367",
+      "pipeline": "4e454d41535345540ac10387ac2d0367",
       "preferredVariant": "GraphicsVertex"
     },
     {
       "passKind": "Fullscreen",
-      "pipeline": "0ac10387ac2d0367",
+      "pipeline": "4e454d41535345540ac10387ac2d0367",
       "preferredVariant": "GraphicsVertex"
     }
   ]

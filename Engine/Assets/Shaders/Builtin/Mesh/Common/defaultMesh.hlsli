@@ -1,3 +1,6 @@
+#ifndef NEM_DEFAULT_MESH_HLSLI
+#define NEM_DEFAULT_MESH_HLSLI
+
 //============================================================================
 //	Common VS/PS
 //============================================================================
@@ -13,6 +16,8 @@ struct VSOutput {
 	float3 tangent : TANGENT0;
 	float2 uv : TEXCOORD0;
 	float3 worldPos : WORLDPOS0;
+	float4 currentClipPosition : TEXCOORD6;
+	float4 previousClipPosition : TEXCOORD7;
 	uint instanceID : INSTANCEID0;
 	uint subMeshIndex : SUBMESHINDEX0;
 	// PS側のTBN構築で使う接線符号と向き符号
@@ -30,16 +35,19 @@ struct DepthVSOutput {
 cbuffer ViewConstants : register(b0) {
 	
 	float4x4 viewProjection;
+	float4x4 previousViewProjection;
 	float4x4 cullingViewProjection;
 	float4x4 cullingView;
 	float3 cullingCameraPos;
 	float cullingNearClip;
+	float3 cullingCameraForward;
+	float _cullingPad0;
 	float2 viewSize;
 	float2 cullingViewSize;
 	float2 cullingProjectionScale;
 	float2 _viewPad0;
 	float3 renderCameraPos;
-	float _viewPad1;
+	uint frameSerial;
 };
 cbuffer SubMeshConstants : register(b1) {
 
@@ -55,7 +63,7 @@ cbuffer MeshDrawConstants : register(b0, space1) {
 	uint instanceCount;
 	uint cullingEnabled;
 	uint packedMeshletVertexIndices;
-	uint _meshDrawReserved0;
+	uint frustumCullingEnabled;
 	uint contributionCullingEnabled;
 	uint normalConeCullingEnabled;
 	float3 meshBoundsCenter;
@@ -65,7 +73,15 @@ cbuffer MeshDrawConstants : register(b0, space1) {
 	float outlineMaxModelExpansion;
 	float outlineMaxAbsCameraZOffset;
 	uint outlineHasScreenPixelWidth;
-	uint3 _meshDrawReserved1;
+	uint occlusionCullingEnabled;
+	uint subMeshGroupIndex;
+	float maxDisplacement;
+	uint4 lodIndexOffsets;
+	uint4 lodIndexCounts;
+	uint4 lodMeshletOffsets;
+	uint4 lodMeshletCounts;
+	float3 lodPixelThresholds;
+	uint lodCount;
 };
 // 共有GPU構造体はmeshShaderSharedTypes.hlsliへ集約済み
 
@@ -87,6 +103,12 @@ StructuredBuffer<uint> gMeshletPrimitiveIndices : register(t2, space1);
 StructuredBuffer<SubMeshShaderData> gSubMeshes : register(t3, space1);
 StructuredBuffer<MeshletBounds> gMeshletBounds : register(t4, space1);
 StructuredBuffer<uint> gPackedMeshletVertexIndices : register(t5, space1);
+Texture2D<float> gOcclusionDepthPyramid : register(t7, space1);
+
+#include "meshPBRMaterial.hlsli"
+
+#define NEM_OCCLUSION_DEPTH_PYRAMID gOcclusionDepthPyramid
+#include "../../Common/CullingHelpers.hlsli"
 
 //============================================================================
 //	functions
@@ -100,12 +122,30 @@ SubMeshShaderData GetInstanceSubMesh(uint instanceID, uint localSubMeshIndex) {
 	return gSubMeshes[instance.subMeshDataOffset + clampedSubMeshIndex];
 }
 
+bool IsSubMeshRenderGroupVisible(uint instanceID, uint localSubMeshIndex) {
+
+	return subMeshGroupIndex == 0xFFFFFFFFu ||
+		GetInstanceSubMesh(instanceID, localSubMeshIndex).renderGroupIndex ==
+			subMeshGroupIndex;
+}
+
 float4x4 GetInstanceSubMeshWorldMatrix(uint instanceID, uint localSubMeshIndex) {
 
 	MeshInstance instance = gMeshInstances[instanceID];
 	SubMeshShaderData subMesh = GetInstanceSubMesh(instanceID, localSubMeshIndex);
 
 	return mul(subMesh.localMatrix, instance.worldMatrix);
+}
+
+float4x4 GetInstanceSubMeshPreviousWorldMatrix(
+	uint instanceID, uint localSubMeshIndex) {
+
+	MeshInstance instance = gMeshInstances[instanceID];
+	SubMeshShaderData subMesh = GetInstanceSubMesh(
+		instanceID, localSubMeshIndex);
+	float4x4 previousWorld = instance.motionFrameSerial == frameSerial ?
+		instance.previousWorldMatrix : instance.worldMatrix;
+	return mul(subMesh.localMatrix, previousWorld);
 }
 
 // 法線変換行列を合成する、CPUで構築済みなのでinverseは呼ばない
@@ -188,6 +228,62 @@ MeshVertex DecodePackedVertex(MeshPackedVertex vertex) {
 	return outVertex;
 }
 
+#if defined(NEM_ENABLE_MESH_DISPLACEMENT)
+// 頂点シェーダーからSamplerを増やさず使用できる繰り返しバイリニアサンプル
+float SampleMeshDisplacement(uint textureIndex, float2 uv) {
+
+	Texture2D<float4> texture =
+		ResourceDescriptorHeap[NonUniformResourceIndex(textureIndex)];
+	uint width;
+	uint height;
+	texture.GetDimensions(width, height);
+
+	const int2 dimensions = int2(max(width, 1u), max(height, 1u));
+	const float2 texelPosition = frac(uv) * float2(dimensions) - 0.5f;
+	const int2 baseTexel = int2(floor(texelPosition));
+	const float2 blend = frac(texelPosition);
+
+	const int2 p00 = (baseTexel % dimensions + dimensions) % dimensions;
+	const int2 p10 =
+		((baseTexel + int2(1, 0)) % dimensions + dimensions) % dimensions;
+	const int2 p01 =
+		((baseTexel + int2(0, 1)) % dimensions + dimensions) % dimensions;
+	const int2 p11 =
+		((baseTexel + int2(1, 1)) % dimensions + dimensions) % dimensions;
+	const float top = lerp(
+		texture.Load(int3(p00, 0)).r,
+		texture.Load(int3(p10, 0)).r, blend.x);
+	const float bottom = lerp(
+		texture.Load(int3(p01, 0)).r,
+		texture.Load(int3(p11, 0)).r, blend.x);
+	return lerp(top, bottom, blend.y);
+}
+
+// DisplacementのRチャンネルをローカル法線方向の頂点変位へ変換
+MeshVertex ApplyMeshDisplacement(
+	MeshVertex vertex, uint instanceID, uint localSubMeshIndex) {
+
+	const MeshMaterialParameters material =
+		GetInstanceMeshMaterialParameters(instanceID, localSubMeshIndex);
+	if (material.displacementTexture == 0xFFFFFFFFu ||
+		abs(material.displacementScale) <= 0.000001f) {
+
+		return vertex;
+	}
+
+	const SubMeshShaderData subMesh =
+		GetInstanceSubMesh(instanceID, localSubMeshIndex);
+	const float2 uv = mul(float4(vertex.uv, 0.0f, 1.0f),
+		subMesh.uvMatrix).xy;
+	const float height = SampleMeshDisplacement(
+		material.displacementTexture, uv);
+	const float offset = (height - material.displacementMidpoint) *
+		material.displacementScale;
+	vertex.position.xyz += normalize(vertex.normal) * offset;
+	return vertex;
+}
+#endif
+
 uint LoadMeshletVertexIndex(uint index) {
 
 	if (packedMeshletVertexIndices == 0u) {
@@ -204,79 +300,51 @@ uint LoadMeshletVertexIndex(uint index) {
 MeshVertex LoadMeshVertex(uint instanceID, uint vertexIndex) {
 
 	MeshInstance instance = gMeshInstances[instanceID];
+	MeshVertex vertex;
 	if ((instance.flags & MESH_INSTANCE_FLAG_SKINNED) != 0u) {
-		
-		return DecodePackedVertex(gSkinnedPackedVertices[instance.skinnedVertexOffset + vertexIndex]);
+
+		vertex = DecodePackedVertex(
+			gSkinnedPackedVertices[instance.skinnedVertexOffset + vertexIndex]);
+	} else {
+
+		vertex = DecodePackedVertex(gPackedVertices[vertexIndex]);
 	}
-	return DecodePackedVertex(gPackedVertices[vertexIndex]);
-}
-
-float4 GetFrustumPlane(uint index) {
-
-	float4 col0 = float4(cullingViewProjection[0][0], cullingViewProjection[1][0], cullingViewProjection[2][0], cullingViewProjection[3][0]);
-	float4 col1 = float4(cullingViewProjection[0][1], cullingViewProjection[1][1], cullingViewProjection[2][1], cullingViewProjection[3][1]);
-	float4 col2 = float4(cullingViewProjection[0][2], cullingViewProjection[1][2], cullingViewProjection[2][2], cullingViewProjection[3][2]);
-	float4 col3 = float4(cullingViewProjection[0][3], cullingViewProjection[1][3], cullingViewProjection[2][3], cullingViewProjection[3][3]);
-
-	if (index == 0) { return col3 + col0; }
-	if (index == 1) { return col3 - col0; }
-	if (index == 2) { return col3 + col1; }
-	if (index == 3) { return col3 - col1; }
-	if (index == 4) { return col2; }
-	return col3 - col2;
-}
-
-float4 NormalizePlane(float4 plane) {
-
-	float len = length(plane.xyz);
-	if (len <= 0.00001f) {
-		return plane;
-	}
-	return plane / len;
-}
-
-float GetMatrixMaxScale(float4x4 inputMat) {
-
-	float sx = length(inputMat[0].xyz);
-	float sy = length(inputMat[1].xyz);
-	float sz = length(inputMat[2].xyz);
-	return max(sx, max(sy, sz));
-}
-
-bool IsSphereInFrustum(float3 center, float radius) {
-
-	[unroll]
-	for (uint i = 0; i < 6; ++i) {
-
-		float4 plane = NormalizePlane(GetFrustumPlane(i));
-		if (dot(plane.xyz, center) + plane.w < -radius) {
-			return false;
-		}
-	}
-	return true;
-}
-
-float2 CalcProjectedPixelRadiusXY(float3 center, float radius) {
-
-	float4 clip = mul(float4(center, 1.0f), cullingViewProjection);
-	if (clip.w <= 0.00001f) {
-		return float2(contributionPixelThreshold, contributionPixelThreshold);
-	}
-
-	float3 viewCenter = mul(float4(center, 1.0f), cullingView).xyz;
-	float nearZ = viewCenter.z - radius;
-	if (nearZ <= max(cullingNearClip, 0.00001f)) {
-		return float2(1000000.0f, 1000000.0f);
-	}
-
-	float2 projectedRadius = abs(radius * cullingProjectionScale / nearZ);
-	return projectedRadius * cullingViewSize * 0.5f;
+#if defined(NEM_ENABLE_MESH_DISPLACEMENT)
+	return ApplyMeshDisplacement(
+		vertex, instanceID, gVertexSubMeshIndices[vertexIndex]);
+#else
+	return vertex;
+#endif
 }
 
 float CalcProjectedPixelRadius(float3 center, float radius) {
 
-	float2 radiusXY = CalcProjectedPixelRadiusXY(center, radius);
+	float2 radiusXY = CalcProjectedPixelRadiusXY(
+		cullingViewProjection, cullingView, cullingNearClip, cullingProjectionScale,
+		cullingViewSize, contributionPixelThreshold, center, radius);
 	return max(radiusXY.x, radiusXY.y);
+}
+
+uint ResolveMeshLOD(MeshInstance instance) {
+
+	if (lodCount <= 1u ||
+		(instance.flags & MESH_INSTANCE_FLAG_SKINNED) != 0u) {
+		return 0u;
+	}
+
+	float3 center = mul(float4(meshBoundsCenter, 1.0f), instance.worldMatrix).xyz;
+	float radius = meshBoundsRadius * GetMatrixMaxScale(instance.worldMatrix);
+	float pixelRadius = CalcProjectedPixelRadius(center, radius);
+	if (pixelRadius >= lodPixelThresholds.x) {
+		return 0u;
+	}
+	if (pixelRadius >= lodPixelThresholds.y) {
+		return 1u;
+	}
+	if (pixelRadius >= lodPixelThresholds.z) {
+		return 2u;
+	}
+	return min(3u, lodCount - 1u);
 }
 
 bool HasContribution(float3 center, float radius) {
@@ -300,19 +368,36 @@ bool IsNormalConeVisible(MeshletBounds bounds, float3 center, float3x3 normalMat
 	return dot(axis, viewDir) > -coneAngleSin;
 }
 
+bool IsSphereOccluded(float3 center, float radius) {
+
+	if (occlusionCullingEnabled == 0u) {
+		return false;
+	}
+
+	return IsSphereOccludedHiZ(
+		cullingViewProjection, cullingView,
+		cullingNearClip, cullingProjectionScale,
+		cullingViewSize, cullingCameraForward,
+		center, radius);
+}
+
 bool IsMeshletVisible(uint meshletIndex, uint instanceIndex) {
 
+	MeshletDrawDesc meshlet = gMeshlets[meshletIndex];
+	if (!IsSubMeshRenderGroupVisible(
+		instanceIndex, meshlet.subMeshIndex)) {
+		return false;
+	}
 	if (cullingEnabled == 0u) {
 		return true;
 	}
 
-	MeshletDrawDesc meshlet = gMeshlets[meshletIndex];
 	float4x4 worldMatrix = GetInstanceSubMeshWorldMatrix(instanceIndex, meshlet.subMeshIndex);
 	float4x4 normalMatrix = GetInstanceSubMeshNormalMatrix(instanceIndex, meshlet.subMeshIndex);
 	MeshletBounds bounds = gMeshletBounds[meshletIndex];
 	float3 center = mul(float4(bounds.center, 1.0f), worldMatrix).xyz;
 	// 背面法アウトラインは元形状より外へ膨張するため、Boundsを安全側へ広げる
-	float localRadius = bounds.radius;
+	float localRadius = bounds.radius + maxDisplacement;
 	if (invertedHullOutlinePass != 0u) {
 		localRadius += outlineMaxModelExpansion;
 	}
@@ -320,13 +405,17 @@ bool IsMeshletVisible(uint meshletIndex, uint instanceIndex) {
 	if (invertedHullOutlinePass != 0u) {
 		radius += outlineMaxAbsCameraZOffset;
 	}
-	if (!IsSphereInFrustum(center, radius)) {
+	if (frustumCullingEnabled != 0u &&
+		!IsSphereInFrustum(cullingViewProjection, center, radius)) {
 		return false;
 	}
 	if (!HasContribution(center, radius)) {
 		return false;
 	}
 	if (!IsNormalConeVisible(bounds, center, (float3x3)normalMatrix)) {
+		return false;
+	}
+	if (IsSphereOccluded(center, radius)) {
 		return false;
 	}
 	return true;
@@ -342,10 +431,17 @@ VSOutput BuildMeshSurfaceVertex(uint vertexID, uint instanceID) {
 	float4x4 worldMatrix = GetInstanceSubMeshWorldMatrix(instanceID, localSubMeshIndex);
 	float4x4 normalMatrix = GetInstanceSubMeshNormalMatrix(instanceID, localSubMeshIndex);
 	float4 worldPos = mul(vertex.position, worldMatrix);
+	float4x4 previousWorldMatrix = GetInstanceSubMeshPreviousWorldMatrix(
+		instanceID, localSubMeshIndex);
+	float4 previousWorldPos = mul(vertex.position, previousWorldMatrix);
 
 	VSOutput output;
 
 	output.position = mul(worldPos, viewProjection);
+	output.currentClipPosition = output.position;
+	output.previousClipPosition =
+		(gMeshInstances[instanceID].flags & MESH_INSTANCE_FLAG_SKINNED) != 0u ?
+		output.position : mul(previousWorldPos, previousViewProjection);
 	output.worldPos = worldPos.xyz;
 	// 法線はnormalMatrix、接線は位置と同じworldMatrixで変換する
 	output.normal = TransformMeshNormalToWorld(vertex.normal, normalMatrix);
@@ -355,6 +451,14 @@ VSOutput BuildMeshSurfaceVertex(uint vertexID, uint instanceID) {
 	output.subMeshIndex = localSubMeshIndex;
 	output.tangentSign = vertex.tangentSign;
 	output.orientationSign = GetInstanceSubMeshOrientationSign(instanceID, localSubMeshIndex);
+	if (!IsSubMeshRenderGroupVisible(instanceID, localSubMeshIndex)) {
+		// VS経路ではグループ外の頂点をfar面の外へ送りラスタライズしない
+		output.position.z = output.position.w * 2.0f;
+		output.currentClipPosition = output.position;
+		output.previousClipPosition = output.position;
+	}
 
 	return output;
 }
+
+#endif // NEM_DEFAULT_MESH_HLSLI

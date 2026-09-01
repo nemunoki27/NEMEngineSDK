@@ -1,6 +1,10 @@
 #ifndef NEM_PARTICLE_HLSLI
 #define NEM_PARTICLE_HLSLI
 
+static const uint PARTICLE_BLEND_MULTIPLY = 3u;
+static const uint PARTICLE_BLEND_SCREEN = 4u;
+static const uint PARTICLE_BLEND_PREMULTIPLIED = 5u;
+
 //============================================================================
 //	Particle hlsli
 //============================================================================
@@ -27,7 +31,7 @@ struct ParticleMaterialData {
 
 	// 発光色と強さ、wが強さ
 	float4 emissive;
-	// xがアルファ棄却の閾値、yがScreen2D PlaneのV反転
+	// xがアルファ棄却の閾値、yがScreen2D PlaneのV反転、zがBlendMode
 	float4 materialParams;
 	// フェーズマテリアルの寿命アニメーション色
 	float4 materialColor;
@@ -97,5 +101,20 @@ float2 TransformParticleUV(float2 uv, ParticleMaterialData material) {
 		uv.y = 1.0f - uv.y;
 	}
 	return mul(float4(uv, 0.0f, 1.0f), material.uvMatrix).xy;
+}
+
+float4 PrepareParticleBlendColor(float4 color, ParticleMaterialData material) {
+
+	const uint blendMode = (uint) round(material.materialParams.z);
+	const float alpha = saturate(color.a);
+	if (blendMode == PARTICLE_BLEND_MULTIPLY) {
+		// Multiplyは透明時に乗算係数1へ戻して描画先へ影響させない
+		color.rgb = lerp(1.0f.xxx, color.rgb, alpha);
+	} else if (blendMode == PARTICLE_BLEND_SCREEN ||
+		blendMode == PARTICLE_BLEND_PREMULTIPLIED) {
+		// ScreenとPremultipliedはブレンド前にRGBをα乗算する
+		color.rgb *= alpha;
+	}
+	return color;
 }
 #endif // NEM_PARTICLE_HLSLI

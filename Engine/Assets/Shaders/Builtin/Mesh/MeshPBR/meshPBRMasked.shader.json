@@ -1,0 +1,30 @@
+{
+  "name": "MeshPBRMasked",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "4e454d4153534554f6485468f3b0f105",
+      "entry": "main",
+      "profile": "vs_6_6"
+    },
+    {
+      "stage": "AS",
+      "file": "4e454d415353455406811f98f605bb52",
+      "entry": "main",
+      "profile": "as_6_6"
+    },
+    {
+      "stage": "MS",
+      "file": "4e454d4153534554109772a2d84dd757",
+      "entry": "main",
+      "profile": "ms_6_6"
+    },
+    {
+      "stage": "PS",
+      "file": "4e454d41535345542b5e427ce09053d5",
+      "entry": "mainMasked",
+      "profile": "ps_6_6"
+    }
+  ],
+  "colorParameters": [ "color", "emissiveColor" ]
+}

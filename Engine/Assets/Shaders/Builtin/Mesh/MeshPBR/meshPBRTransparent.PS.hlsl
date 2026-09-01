@@ -5,6 +5,7 @@
 #include "../Common/meshLighting.hlsli"
 #include "../Common/meshPBRMaterial.hlsli"
 #include "../Common/meshPBR.hlsli"
+#include "../Common/meshSurfaceLighting.hlsli"
 
 //============================================================================
 //	output
@@ -21,7 +22,7 @@ TransparentPSOutput mainTransparent(VSOutput input) {
 
 	ResolvedPBRMaterial m = ResolvePBRMaterial(input);
 	// フォワードレンダリングでPBR処理
-	float3 finalColor = EvaluateForwardPBRLighting(input, m);
+	float3 finalColor = EvaluateMeshSurfaceLighting(input, m);
 
 	TransparentPSOutput output;
 	output.color = float4(finalColor, m.baseColor.a);

@@ -1,0 +1,19 @@
+{
+  "name": "Primitive2DOutlineMask",
+  "domain": "UI",
+  "parameters": {
+    "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 }
+  },
+  "passes": [
+    {
+      "passKind": "ScreenSpaceOutlineMask",
+      "pipeline": "4e454d41535345547c1d9a4b8e2f6046",
+      "preferredVariant": "GraphicsVertex"
+    },
+    {
+      "passKind": "ScreenSpaceOutlineCoverageMask",
+      "pipeline": "4e454d41535345547c1d9a4b8e2f6046",
+      "preferredVariant": "GraphicsVertex"
+    }
+  ]
+}

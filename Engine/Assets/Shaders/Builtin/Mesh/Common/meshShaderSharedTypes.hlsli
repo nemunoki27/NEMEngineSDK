@@ -50,8 +50,12 @@ struct SubMeshShaderData {
 
 	uint occlusionTextureIndex;
 	uint specularTextureIndex;
+	uint metallicTextureIndex;
+	uint roughnessTextureIndex;
+
 	float metallic;
 	float roughness;
+	float2 _materialPad;
 
 	// 位置やBoundsやCulling用のローカル行列
 	float4x4 localMatrix;
@@ -66,12 +70,18 @@ struct SubMeshShaderData {
 	float3 sourcePivot;
 	// 負スケール時に-1になるlocalMatrix線形部の行列式の符号
 	float localOrientationSign;
+
+	// 同じMaterialと表面方式をまとめた描画グループ
+	uint renderGroupIndex;
+	uint3 _renderGroupPad;
 };
 
 struct MeshInstance {
 
 	// 位置やBoundsやCulling用のワールド行列
 	float4x4 worldMatrix;
+	// Transform更新フレームだけ参照する更新前ワールド行列
+	float4x4 previousWorldMatrix;
 	// 法線方向用のワールド法線行列
 	float4x4 normalMatrix;
 
@@ -83,10 +93,13 @@ struct MeshInstance {
 	uint outlineDataIndex;
 	// 負スケール時に-1になるworldMatrix線形部の行列式の符号
 	float orientationSign;
-	uint2 _outlinePad;
+	uint entityIndex;
+	uint entityGeneration;
 
 	// インスタンスごとの乗算色
 	float4 color;
+	uint motionFrameSerial;
+	uint3 _motionPad;
 };
 
 static const uint MESH_INSTANCE_FLAG_SKINNED = 1u;

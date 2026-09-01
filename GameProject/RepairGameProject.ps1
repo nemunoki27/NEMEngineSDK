@@ -6,8 +6,7 @@
 
 param(
     [string]$GameRoot = "",
-    [string]$SupportRoot = "",
-    [switch]$SkipGitIndexCleanup
+    [string]$SupportRoot = ""
 )
 
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
@@ -138,7 +137,10 @@ function Sync-RootSupportFiles([string]$ResolvedGameRoot, [string]$ResolvedSuppo
         }
     }
 
-    $gitIgnoreChanged = Add-TextFileRule (Join-Path $ResolvedGameRoot ".gitignore") "Project/**/*.exeConfig.json" "# NEMEngine local editor/runtime config"
+    $gitIgnorePath = Join-Path $ResolvedGameRoot ".gitignore"
+    $gitIgnoreChanged = Add-TextFileRule $gitIgnorePath "Project/**/Library/" "# NEMEngine local editor/runtime data"
+    $gitIgnoreChanged = (Add-TextFileRule $gitIgnorePath "Project/**/Saved/" "# NEMEngine local editor/runtime data") -or $gitIgnoreChanged
+    $gitIgnoreChanged = (Add-TextFileRule $gitIgnorePath "Project/**/UserSettings/" "# NEMEngine local editor/runtime data") -or $gitIgnoreChanged
     if ($gitIgnoreChanged) {
         Write-Host "  Updated: .gitignore"
     }
@@ -146,36 +148,6 @@ function Sync-RootSupportFiles([string]$ResolvedGameRoot, [string]$ResolvedSuppo
     $gitAttributesChanged = Add-TextFileRule (Join-Path $ResolvedGameRoot ".gitattributes") "*.bat text eol=crlf" "# NEMEngine Windows scripts"
     if ($gitAttributesChanged) {
         Write-Host "  Updated: .gitattributes"
-    }
-}
-
-function Remove-TrackedExeConfig([string]$ResolvedGameRoot) {
-    if ($SkipGitIndexCleanup) {
-        return
-    }
-
-    Push-Location $ResolvedGameRoot
-    try {
-        git rev-parse --is-inside-work-tree *> $null
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "  Not a Git repository. Skipped .exeConfig.json index cleanup."
-            return
-        }
-
-        $tracked = @(git ls-files -- "Project/**/*.exeConfig.json")
-        if ($LASTEXITCODE -ne 0 -or $tracked.Count -eq 0) {
-            Write-Host "  .exeConfig.json is not tracked by Git."
-            return
-        }
-
-        git rm --cached -f -- $tracked | Out-Host
-        if ($LASTEXITCODE -ne 0) {
-            throw "Failed to remove .exeConfig.json files from the Git index."
-        }
-
-        Write-Host "  Removed .exeConfig.json files from the Git index. Files remain on disk."
-    } finally {
-        Pop-Location
     }
 }
 
@@ -193,7 +165,6 @@ Write-Host ""
 
 Sync-PremakeFiles $resolvedGameRoot $resolvedSupportRoot $gameName
 Sync-RootSupportFiles $resolvedGameRoot $resolvedSupportRoot
-Remove-TrackedExeConfig $resolvedGameRoot
 
 Write-Host ""
 Write-Host "[Done] Synced game-project SDK support files and Git settings."

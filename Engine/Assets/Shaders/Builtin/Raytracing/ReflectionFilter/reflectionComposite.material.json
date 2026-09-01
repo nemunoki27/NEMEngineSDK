@@ -1,0 +1,15 @@
+{
+  "name": "ReflectionComposite",
+  "domain": "Compute",
+  "parameters": {
+    "reflectionMaxRoughness": 0.45,
+    "reflectionRoughnessFade": 0.15
+  },
+  "passes": [
+    {
+      "passKind": "PostProcess",
+      "pipeline": "4e454d41535345546228d203578ecde5",
+      "preferredVariant": "Compute"
+    }
+  ]
+}

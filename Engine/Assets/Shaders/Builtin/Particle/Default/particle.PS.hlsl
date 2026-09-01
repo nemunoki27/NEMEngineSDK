@@ -29,6 +29,7 @@ PSOutput main(VSOutput input) {
 	clip(baseColor.a - material.materialParams.x);
 	// 発光加算
 	baseColor.rgb += material.emissive.rgb * material.emissive.w;
+	baseColor = PrepareParticleBlendColor(baseColor, material);
 
 	PSOutput output;
 	output.color = baseColor;

@@ -1,0 +1,10 @@
+{
+  "name": "BuildDepthPyramidPipeline",
+  "variants": [
+    {
+      "kind": "Compute",
+      "pipelineType": "Compute",
+      "shader": "4e454d4153534554d9a171e5f80901a2"
+    }
+  ]
+}

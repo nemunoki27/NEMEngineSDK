@@ -1,0 +1,17 @@
+{
+  "name": "SpriteOutlineMask",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "4e454d415353455454837bc26b01ce62",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "PS",
+      "file": "4e454d41535345547c1d9a4b8e2f6040",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}

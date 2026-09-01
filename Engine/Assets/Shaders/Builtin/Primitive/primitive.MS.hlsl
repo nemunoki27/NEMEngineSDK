@@ -46,17 +46,16 @@ void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID,
 	for (uint k = 0; k < 3u; ++k) {
 
 		MeshVertex v = gVertices[gIndices[indexBase + k]];
-		VSOutput output;
-		float4 worldPos = mul(float4(v.position.xyz, 1.0f), instance.worldMatrix);
-		output.position = mul(worldPos, viewProjection);
-		output.worldPos = worldPos.xyz;
-		output.normal = normalize(mul(v.normal, (float3x3)instance.worldMatrix));
-		output.tangent = normalize(mul(v.tangent, (float3x3)instance.worldMatrix));
-		output.tangentSign = v.tangentSign;
-		output.texcoord = mul(float4(v.uv, 0.0f, 1.0f), instance.uvMatrix).xy;
-		output.flags = instance.flags;
-		output.vertexColor = ResolvePrimitiveVertexColor(v.position.xyz, instance);
-		verts[localTriangle * 3u + k] = output;
+		verts[localTriangle * 3u + k] =
+			BuildPrimitiveVertexOutput(
+				v.position.xyz,
+				v.normal,
+				v.tangent,
+				v.tangentSign,
+				v.uv,
+				ResolvePrimitiveVertexColor(
+					v.position.xyz, instance),
+				instance);
 	}
 	tris[localTriangle] = uint3(localTriangle * 3u, localTriangle * 3u + 1u, localTriangle * 3u + 2u);
 }

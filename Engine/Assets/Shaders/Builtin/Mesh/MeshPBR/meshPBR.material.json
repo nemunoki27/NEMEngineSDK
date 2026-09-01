@@ -1,14 +1,21 @@
 {
   "name": "MeshPBR",
   "domain": "Surface",
+  "usage": "Mesh",
   "passes": [
-    { "passKind": "ZPrepass", "pipeline": "f09836087840b1d2", "preferredVariant": "GraphicsMesh" },
-    { "passKind": "Draw", "pipeline": "966f3e8a34595313", "preferredVariant": "GraphicsMesh" },
-    { "passKind": "Transparent", "pipeline": "b8996e4516e31236", "preferredVariant": "GraphicsMesh" }
+    { "passKind": "ZPrepass", "pipeline": "4e454d4153534554f09836087840b1d2", "preferredVariant": "GraphicsMesh" },
+    { "passKind": "EditorPicking", "pipeline": "4e454d41535345548d50435034671c2c", "preferredVariant": "GraphicsVertex" },
+    { "passKind": "Draw", "pipeline": "4e454d4153534554966f3e8a34595313", "preferredVariant": "GraphicsMesh" },
+    { "passKind": "Masked", "pipeline": "4e454d4153534554966f3e8a34595314", "preferredVariant": "GraphicsMesh" },
+    { "passKind": "Transparent", "pipeline": "4e454d4153534554b8996e4516e31236", "preferredVariant": "GraphicsMesh" }
   ],
   "parameters": {
     "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
-    "Metallic": 0.0,
-    "Roughness": 0.5
+    "emissiveColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.0 },
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "emissiveIntensity": 0.0,
+    "displacementMidpoint": 0.5,
+    "displacementScale": 0.0
   }
 }

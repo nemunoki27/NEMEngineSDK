@@ -1,0 +1,11 @@
+{
+    "schemaVersion":  1,
+    "configuration":  "Debug",
+    "files":  [
+                  "NEMRuntime.dll",
+                  "dxcompiler.dll",
+                  "dxil.dll",
+                  "nethost.dll",
+                  "WinPixEventRuntime.dll"
+              ]
+}

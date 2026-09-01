@@ -4,7 +4,7 @@
     {
       "kind": "GraphicsVertex",
       "pipelineType": "Vertex",
-      "shader": "294ca2eac6bcabd0",
+      "shader": "4e454d4153534554294ca2eac6bcabd0",
       "numRenderTargets": 1,
       "dynamicRenderTargetFormats": true,
       "dsvFormat": "DXGI_FORMAT_UNKNOWN",

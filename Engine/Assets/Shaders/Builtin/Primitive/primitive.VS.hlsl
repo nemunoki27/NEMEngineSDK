@@ -17,18 +17,12 @@ VSOutput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID) {
 
 	MeshVertex v = gVertices[vertexID];
 	PrimitiveInstance instance = gInstances[instanceID];
-
-	VSOutput output;
-	// インスタンスごとのワールド行列でSRTを反映する
-	float4 worldPos = mul(float4(v.position.xyz, 1.0f), instance.worldMatrix);
-	output.position = mul(worldPos, viewProjection);
-	output.worldPos = worldPos.xyz;
-	output.normal = normalize(mul(v.normal, (float3x3)instance.worldMatrix));
-	output.tangent = normalize(mul(v.tangent, (float3x3)instance.worldMatrix));
-	output.tangentSign = v.tangentSign;
-	output.texcoord = mul(float4(v.uv, 0.0f, 1.0f), instance.uvMatrix).xy;
-	output.flags = instance.flags;
-	output.vertexColor = ResolvePrimitiveVertexColor(v.position.xyz, instance);
-
-	return output;
+	return BuildPrimitiveVertexOutput(
+		v.position.xyz,
+		v.normal,
+		v.tangent,
+		v.tangentSign,
+		v.uv,
+		ResolvePrimitiveVertexColor(v.position.xyz, instance),
+		instance);
 }

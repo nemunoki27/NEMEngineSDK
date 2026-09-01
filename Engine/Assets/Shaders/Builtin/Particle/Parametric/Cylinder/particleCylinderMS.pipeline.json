@@ -19,7 +19,7 @@
                 "fillMode": "D3D12_FILL_MODE_SOLID",
                 "frontCounterClockwise": false
             },
-            "shader": "eff000000000000d",
+            "shader": "4e454d4153534554eff000000000000d",
             "staticSamplers": [
                 {
                     "addressU": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",

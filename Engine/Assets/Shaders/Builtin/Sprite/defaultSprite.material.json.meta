@@ -1,6 +1,8 @@
 {
-  "guid": "ef1a0db1d6ef57ac",
-  "importer": "Json",
+  "schemaVersion": 2,
+  "guid": "4e454d4153534554ef1a0db1d6ef57ac",
   "type": "Material",
-  "version": 1
+  "importer": "MaterialImporter",
+  "importerVersion": 1,
+  "settings": {}
 }

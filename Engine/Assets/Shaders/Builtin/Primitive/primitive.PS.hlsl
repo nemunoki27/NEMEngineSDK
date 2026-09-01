@@ -6,24 +6,6 @@
 #include "../Mesh/Common/deferredGBuffer.hlsli"
 
 //============================================================================
-//	resources
-//============================================================================
-cbuffer MaterialParameters : register(b3) {
-
-	float4 color;
-	float4 emissiveColor;
-	float Metallic;
-	float Roughness;
-	float emissiveIntensity;
-	float _materialPad0;
-};
-Texture2D<float4> baseColorTexture : register(t0, space2);
-Texture2D<float4> metallicRoughnessTexture : register(t1, space2);
-Texture2D<float4> occlusionTexture : register(t2, space2);
-Texture2D<float4> emissiveTexture : register(t3, space2);
-Texture2D<float4> normalTexture : register(t4, space2);
-
-//============================================================================
 //	output
 //============================================================================
 struct TransparentPSOutput {
@@ -43,8 +25,11 @@ ResolvedPBRMaterial ResolvePrimitiveMaterial(VSOutput input) {
 
 	// メタリックとラフネスはglTF流でB=metallic G=roughness
 	float4 mrSample = metallicRoughnessTexture.Sample(gSampler, uv);
-	float metallic = saturate(Metallic * mrSample.b);
-	float roughness = max(saturate(Roughness * mrSample.g), 0.04f);
+	float metallicSample = metallicTexture.Sample(gSampler, uv).r;
+	float roughnessSample = roughnessTexture.Sample(gSampler, uv).r;
+	float resolvedMetallic = saturate(metallic * mrSample.b * metallicSample);
+	float resolvedRoughness = max(
+		saturate(roughness * mrSample.g * roughnessSample), 0.04f);
 
 	float ao = occlusionTexture.Sample(gSampler, uv).r;
 	float3 emissive = emissiveColor.rgb * emissiveIntensity * emissiveTexture.Sample(gSampler, uv).rgb;
@@ -63,8 +48,8 @@ ResolvedPBRMaterial ResolvePrimitiveMaterial(VSOutput input) {
 	ResolvedPBRMaterial m;
 	m.baseColor = baseColor;
 	m.N = N;
-	m.metallic = metallic;
-	m.roughness = roughness;
+	m.metallic = resolvedMetallic;
+	m.roughness = resolvedRoughness;
 	m.ao = ao;
 	m.emissive = emissive;
 	return m;
@@ -85,6 +70,8 @@ GBufferOutput main(VSOutput input) {
 	surface.roughness = m.roughness;
 	surface.occlusion = m.ao;
 	surface.emissive = m.emissive;
+	surface.motion = ComputeGBufferMotion(
+		input.currentClipPosition, input.previousClipPosition);
 	// renderFlagsから影/IBL/反射の受け設定を反映する
 	surface.flags = BuildMaterialFlags(input.flags);
 
@@ -122,6 +109,10 @@ TransparentPSOutput mainTransparent(VSOutput input) {
 		[loop]
 		for (uint si = 0; si < spotCount; ++si) {
 			Lo += EvaluatePBRSpotLight(gSpotLights[si], input.worldPos, m.N, V, m.baseColor.rgb, m.metallic, m.roughness, F0);
+		}
+		[loop]
+		for (uint ri = 0; ri < rectCount; ++ri) {
+			Lo += EvaluatePBRRectLight(gRectLights[ri], input.worldPos, m.N, V, m.baseColor.rgb, m.metallic, m.roughness, F0);
 		}
 
 		// 環境光はAOで減衰、環境光を受けないサーフェイスは加算しない

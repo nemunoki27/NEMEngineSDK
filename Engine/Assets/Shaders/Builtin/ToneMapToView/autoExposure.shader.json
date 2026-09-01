@@ -1,0 +1,11 @@
+{
+  "name": "AutoExposure",
+  "stages": [
+    {
+      "stage": "CS",
+      "file": "4e454d4153534554ae00000000000001",
+      "entry": "main",
+      "profile": "cs_6_0"
+    }
+  ]
+}

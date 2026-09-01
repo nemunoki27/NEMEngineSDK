@@ -8,21 +8,37 @@
 #include "../Common/deferredGBuffer.hlsli"
 
 //============================================================================
+//	output
+//============================================================================
+GBufferOutput EncodeMeshPBRGBuffer(
+	VSOutput input, ResolvedPBRMaterial material) {
+
+	MeshSurface surface;
+	surface.albedo = material.baseColor.rgb;
+	surface.normal = material.N;
+	surface.worldPos = input.worldPos;
+	surface.metallic = material.metallic;
+	surface.roughness = material.roughness;
+	surface.occlusion = material.ao;
+	surface.emissive = material.emissive;
+	surface.motion = ComputeGBufferMotion(
+		input.currentClipPosition, input.previousClipPosition);
+	// MeshRendererのフラグをGBufferへ渡してライティングパスで分岐させる
+	surface.flags = BuildMaterialFlags(gMeshInstances[input.instanceID].flags);
+	return EncodeGBuffer(surface);
+}
+
+//============================================================================
 //	main
 //============================================================================
 GBufferOutput main(VSOutput input) {
 
-	ResolvedPBRMaterial m = ResolvePBRMaterial(input);
+	return EncodeMeshPBRGBuffer(input, ResolvePBRMaterial(input));
+}
 
-	MeshSurface surface;
-	surface.albedo = m.baseColor.rgb;
-	surface.normal = m.N;
-	surface.worldPos = input.worldPos;
-	surface.metallic = m.metallic;
-	surface.roughness = m.roughness;
-	surface.occlusion = m.ao;
-	surface.emissive = m.emissive;
-	// MeshRendererのフラグをGBufferへ渡してライティングパスで分岐させる
-	surface.flags = BuildMaterialFlags(gMeshInstances[input.instanceID].flags);
-	return EncodeGBuffer(surface);
+GBufferOutput mainMasked(VSOutput input) {
+
+	ResolvedPBRMaterial material = ResolvePBRMaterial(input);
+	clip(material.baseColor.a - ResolveMeshPBRAlphaClip(input));
+	return EncodeMeshPBRGBuffer(input, material);
 }

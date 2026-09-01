@@ -20,17 +20,21 @@ Project/**/bin/
 Project/**/obj/
 Project/**/Managed/
 
+# ===== チーム共有するシーン分割データ =====
+!Project/**/GameAssets/ExternalActors/
+!Project/**/GameAssets/ExternalActors/**
+
 # ===== エンジン/ツールのビルド出力・作業領域 =====
 Generated/
-Project/Library/
-Project/Log/
+Project/**/Library/
+Project/**/Saved/
+Project/**/UserSettings/
 
 # ===== ローカルマシン固有の設定・ログ =====
 Premake/local_settings.lua
 Premake/local_settings.bat
 Premake/premake_error.log
 Project/EditorLayout.ini
-Project/**/*.exeConfig.json
 
 # ===== ツール/OS のキャッシュ =====
 .serena/

@@ -8,9 +8,17 @@ groupshared MeshDispatchPayload payload;
 [numthreads(32, 1, 1)]
 void main(uint groupThreadID : SV_GroupThreadID, uint3 groupID : SV_GroupID) {
 
-	const uint meshletIndex = groupID.x * 32u + groupThreadID;
+	const uint localMeshletIndex = groupID.x * 32u + groupThreadID;
 	const uint instanceIndex = groupID.y;
-	const bool visible = meshletIndex < meshletCount && IsMeshletVisible(meshletIndex, instanceIndex);
+	uint meshletIndex = 0u;
+	bool inRange = instanceIndex < instanceCount;
+	if (inRange) {
+
+		const uint lodIndex = ResolveMeshLOD(gMeshInstances[instanceIndex]);
+		inRange = localMeshletIndex < lodMeshletCounts[lodIndex];
+		meshletIndex = lodMeshletOffsets[lodIndex] + localMeshletIndex;
+	}
+	const bool visible = inRange && IsMeshletVisible(meshletIndex, instanceIndex);
 
 	const uint visibleOffset = WavePrefixCountBits(visible);
 	const uint visibleCount = WaveActiveCountBits(visible);

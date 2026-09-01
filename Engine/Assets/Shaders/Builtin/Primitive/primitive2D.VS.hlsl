@@ -17,17 +17,6 @@ VSOutput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID) {
 
 	MeshVertex v = gVertices[vertexID];
 	PrimitiveInstance instance = gInstances[instanceID];
-
-	VSOutput output;
-	// インスタンスごとのワールド行列でSRTを反映し、正射投影でクリップ空間へ変換する
-	float4 worldPos = mul(float4(v.position.xyz, 1.0f), instance.worldMatrix);
-	output.position = mul(worldPos, viewProjection);
-	float2 texcoord = v.uv;
-	if ((instance.flags & PRIMITIVE_INSTANCE_FLAG_FLIP_SCREEN_V) != 0u) {
-		texcoord.y = 1.0f - texcoord.y;
-	}
-	output.texcoord = mul(float4(texcoord, 0.0f, 1.0f), instance.uvMatrix).xy;
-	output.localTexcoord = texcoord;
-
-	return output;
+	return BuildPrimitive2DVertexOutput(
+		v.position.xyz, v.uv, instance);
 }

@@ -1,0 +1,6 @@
+#ifndef NEM_MATH_CONSTANTS_HLSLI
+#define NEM_MATH_CONSTANTS_HLSLI
+
+static const float PI = 3.14159265f;
+
+#endif // NEM_MATH_CONSTANTS_HLSLI

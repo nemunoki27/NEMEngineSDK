@@ -1,6 +1,7 @@
 //============================================================================
 //	include
 //============================================================================
+#define NEM_ENABLE_MESH_DISPLACEMENT
 #include "screenSpaceOutlineMask.hlsli"
 
 groupshared float4x4 gMeshletWorldMatrix;

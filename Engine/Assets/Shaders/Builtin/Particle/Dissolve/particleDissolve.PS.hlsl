@@ -50,6 +50,7 @@ PSOutput main(VSOutput input) {
 	float4 result = textureColor * input.vertexColor * material.materialColor;
 	result.rgb += custom.edgeColor.rgb * custom.edgeColor.a * edge;
 	result.rgb += material.emissive.rgb * material.emissive.w;
+	result = PrepareParticleBlendColor(result, material);
 
 	PSOutput output;
 	output.color = result;

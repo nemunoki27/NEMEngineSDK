@@ -1,0 +1,10 @@
+{
+  "name": "AutoExposurePipeline",
+  "variants": [
+    {
+      "kind": "Compute",
+      "pipelineType": "Compute",
+      "shader": "4e454d4153534554ae00000000000002"
+    }
+  ]
+}

@@ -58,6 +58,7 @@ if "%FINDSTR_RC%"=="0" (
     exit /b 1
 )
 
+del /q "%~dp0premake_error.log" >nul 2>&1
 echo [OK] Premake generation succeeded.
 
 rem premake が実際に生成した .slnx から GAME_NAME を確定する。

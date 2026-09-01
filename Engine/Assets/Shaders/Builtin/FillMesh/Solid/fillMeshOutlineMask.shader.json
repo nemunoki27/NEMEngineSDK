@@ -1,7 +1,0 @@
-{
-    "name": "fillMeshOutlineMaskShader",
-    "stages": [
-        { "entry": "main", "file": "fa11e50000000a01", "profile": "vs_6_6", "stage": "VS" },
-        { "entry": "main", "file": "fa11e50000000a02", "profile": "ps_6_6", "stage": "PS" }
-    ]
-}

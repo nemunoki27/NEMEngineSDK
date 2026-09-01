@@ -3,13 +3,13 @@
     "stages": [
         {
             "entry": "main",
-            "file": "eff0000000000009",
+            "file": "4e454d4153534554eff0000000000009",
             "profile": "ms_6_6",
             "stage": "MS"
         },
         {
             "entry": "main",
-            "file": "eff0000000000003",
+            "file": "4e454d4153534554eff0000000000003",
             "profile": "ps_6_6",
             "stage": "PS"
         }

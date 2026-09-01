@@ -5,45 +5,11 @@
 //	include
 //============================================================================
 #include "lightingCommon.hlsli"
+#include "../../Common/pbrMath.hlsli"
 
 //============================================================================
 //	バッファ非依存のPBR共通、MeshとPrimitiveで共有する
 //============================================================================
-
-//============================================================================
-//	PBR関数
-//============================================================================
-// hlsl魔導書PBR参照
-float EvalD(float NdotH, float roughness) {
-
-	float a = roughness * roughness;
-	float a2 = a * a;
-	float denom = NdotH * NdotH * (a2 - 1.0f) + 1.0f;
-	return a2 / max(PI * denom * denom, 1e-7f);
-}
-float EvalG1(float NdotX, float roughness) {
-
-	float r = roughness + 1.0f;
-	float k = (r * r) / 8.0f;
-	return NdotX / max(NdotX * (1.0f - k) + k, 1e-7f);
-}
-float EvalG(float NdotV, float NdotL, float roughness) {
-
-	return EvalG1(NdotV, roughness) * EvalG1(NdotL, roughness);
-}
-float3 FresnelSchlick(float cosTheta, float3 F0) {
-
-	return F0 + (1.0f - F0) * pow(saturate(1.0f - cosTheta), 5.0f);
-}
-float3 DisneyDiffuse(float NdotL, float NdotV, float LdotH, float roughness, float3 albedo) {
-
-	float energyBias = lerp(0.0f, 0.5f, roughness);
-	float energyFactor = lerp(1.0f, 1.0f / 1.51f, roughness);
-	float Fd90 = energyBias + 2.0f * LdotH * LdotH * roughness;
-	float FL = 1.0f + (Fd90 - 1.0f) * pow(1.0f - NdotL, 5.0f);
-	float FV = 1.0f + (Fd90 - 1.0f) * pow(1.0f - NdotV, 5.0f);
-	return albedo * FL * FV * energyFactor / PI;
-}
 
 //============================================================================
 //	マテリアル解決結果
@@ -61,6 +27,34 @@ struct ResolvedPBRMaterial {
 //============================================================================
 //	ライト評価
 //============================================================================
+float3 EvaluatePBRRadiance(float3 N, float3 V, float3 L,
+	float3 radiance, float3 albedo, float metallic,
+	float roughness, float3 F0) {
+
+	float NdotL = saturate(dot(N, L));
+	if (NdotL <= 0.0f) {
+		return 0.0f.xxx;
+	}
+
+	float NdotV = saturate(dot(N, V));
+	float3 H = normalize(V + L);
+	float NdotH = saturate(dot(N, H));
+	float HdotV = saturate(dot(H, V));
+	float LdotH = saturate(dot(L, H));
+
+	float3 F = FresnelSchlick(HdotV, F0);
+	float D = EvalD(NdotH, roughness);
+	float G = EvalG(NdotV, NdotL, roughness);
+
+	float3 specular =
+		D * G * F / max(4.0f * NdotV * NdotL, 1e-4f);
+	float3 kD = (1.0f - F) * (1.0f - metallic);
+	float3 diffuse =
+		kD * DisneyDiffuse(NdotL, NdotV, LdotH, roughness, albedo);
+
+	return (diffuse + specular) * NdotL * radiance;
+}
+
 // PBR平行光源
 float3 EvaluatePBRDirectionalLight(DirectionalLight light, float3 N, float3 V,
 	float3 albedo, float metallic, float roughness, float3 F0) {
@@ -171,6 +165,43 @@ float3 EvaluatePBRSpotLight(SpotLight light, float3 worldPos, float3 N, float3 V
 	float3 diffuse = kD * DisneyDiffuse(NdotL, NdotV, LdotH, roughness, albedo);
 
 	return (diffuse + specular) * NdotL * light.color.rgb * light.intensity * distanceAttenuation * coneAttenuation;
+}
+
+// PBR矩形面光源
+float3 EvaluatePBRRectLight(RectLight light, float3 worldPos, float3 N, float3 V,
+	float3 albedo, float metallic, float roughness, float3 F0) {
+
+	float centerDistance = length(light.pos - worldPos);
+	float attenuation = ComputeDistanceAttenuation(
+		centerDistance, light.attenuationRadius, light.decay);
+	float barnAttenuation =
+		ComputeRectBarnAttenuation(light, worldPos);
+	if (attenuation <= 0.0f || barnAttenuation <= 0.0f) {
+		return 0.0f.xxx;
+	}
+
+	float3 result = 0.0f.xxx;
+	[unroll]
+	for (uint sampleIndex = 0u;
+		sampleIndex < kRectLightSampleCount; ++sampleIndex) {
+
+		float3 samplePos =
+			GetRectLightSamplePosition(light, sampleIndex);
+		float3 toLight = samplePos - worldPos;
+		float sampleDistance = length(toLight);
+		if (sampleDistance <= 1e-5f) {
+			continue;
+		}
+
+		float3 L = toLight / sampleDistance;
+		float sourceFacing =
+			saturate(dot(-L, light.direction));
+		float3 radiance = light.color.rgb * light.intensity *
+			attenuation * barnAttenuation * sourceFacing;
+		result += EvaluatePBRRadiance(
+			N, V, L, radiance, albedo, metallic, roughness, F0);
+	}
+	return result / float(kRectLightSampleCount);
 }
 
 #endif // NEM_PBR_SHADING_HLSLI

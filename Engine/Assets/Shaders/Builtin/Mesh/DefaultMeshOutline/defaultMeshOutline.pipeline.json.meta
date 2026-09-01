@@ -1,6 +1,8 @@
 {
-  "guid": "7fb5fd89c7103e74",
-  "importer": "nlohmann::json",
+  "schemaVersion": 2,
+  "guid": "4e454d41535345547fb5fd89c7103e74",
   "type": "RenderPipeline",
-  "version": 1
+  "importer": "RenderPipelineImporter",
+  "importerVersion": 1,
+  "settings": {}
 }

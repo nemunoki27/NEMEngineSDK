@@ -4,7 +4,7 @@
   "passes": [
     {
       "passKind": "ScreenSpaceOutlineComposite",
-      "pipeline": "7c1d9a4b8e2f6023",
+      "pipeline": "4e454d41535345547c1d9a4b8e2f6023",
       "preferredVariant": "GraphicsVertex"
     }
   ]

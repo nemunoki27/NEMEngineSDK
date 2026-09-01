@@ -4,7 +4,7 @@
     {
       "kind": "GraphicsMesh",
       "pipelineType": "Mesh",
-      "shader": "5cea6ee9e474022f",
+      "shader": "4e454d41535345545cea6ee9e474022f",
       "numRenderTargets": 3,
       "dynamicRenderTargetFormats": true,
       "dsvFormat": "DXGI_FORMAT_UNKNOWN",
@@ -20,7 +20,8 @@
         {
           "shaderRegister": 0,
           "registerSpace": 0,
-          "filter": "D3D12_FILTER_MIN_MAG_MIP_LINEAR",
+          "filter": "D3D12_FILTER_ANISOTROPIC",
+          "maxAnisotropy": 8,
           "addressU": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",
           "addressV": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",
           "addressW": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",
@@ -32,7 +33,7 @@
     {
       "kind": "GraphicsVertex",
       "pipelineType": "Vertex",
-      "shader": "5cea6ee9e474022f",
+      "shader": "4e454d41535345545cea6ee9e474022f",
       "numRenderTargets": 3,
       "dynamicRenderTargetFormats": true,
       "dsvFormat": "DXGI_FORMAT_UNKNOWN",
@@ -47,7 +48,8 @@
         {
           "shaderRegister": 0,
           "registerSpace": 0,
-          "filter": "D3D12_FILTER_MIN_MAG_MIP_LINEAR",
+          "filter": "D3D12_FILTER_ANISOTROPIC",
+          "maxAnisotropy": 8,
           "addressU": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",
           "addressV": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",
           "addressW": "D3D12_TEXTURE_ADDRESS_MODE_WRAP",

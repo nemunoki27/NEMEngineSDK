@@ -1,6 +1,8 @@
 {
-  "guid": "7c1d9a4b8e2f6025",
-  "importer": "Json",
+  "schemaVersion": 2,
+  "guid": "4e454d41535345547c1d9a4b8e2f6025",
   "type": "RenderPipeline",
-  "version": 1
+  "importer": "RenderPipelineImporter",
+  "importerVersion": 1,
+  "settings": {}
 }

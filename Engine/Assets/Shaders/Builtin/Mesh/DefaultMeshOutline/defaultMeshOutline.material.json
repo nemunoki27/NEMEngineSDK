@@ -4,17 +4,17 @@
   "passes": [
     {
       "passKind": "Outline",
-      "pipeline": "7fb5fd89c7103e74",
+      "pipeline": "4e454d41535345547fb5fd89c7103e74",
       "preferredVariant": "GraphicsMesh"
     },
     {
       "passKind": "OutlineStencilWrite",
-      "pipeline": "c0a34ca481e80c53",
+      "pipeline": "4e454d4153534554c0a34ca481e80c53",
       "preferredVariant": "GraphicsMesh"
     },
     {
       "passKind": "OutlineStencilTest",
-      "pipeline": "478183561c5fd23e",
+      "pipeline": "4e454d4153534554478183561c5fd23e",
       "preferredVariant": "GraphicsMesh"
     }
   ]

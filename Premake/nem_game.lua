@@ -52,20 +52,20 @@ function NEM_GameLinkEngine()
     }
 
     links {
-        "NEMEngine",
+        "NEMRuntime",
     }
 
     linkoptions {
         "/IGNORE:4099",
     }
 
-    -- import lib は構成別にSDKのBinから引く、未パッケージ構成はDebugへフォールバックする
+    -- import lib は構成別にSDKのBinから引く
     filter "configurations:Debug"
         libdirs { path.join(NEM_SDK_ROOT, "Bin/Debug") }
     filter "configurations:Develop"
-        libdirs { path.join(NEM_SDK_ROOT, "Bin/Develop"), path.join(NEM_SDK_ROOT, "Bin/Debug") }
+        libdirs { path.join(NEM_SDK_ROOT, "Bin/Develop") }
     filter "configurations:Release"
-        libdirs { path.join(NEM_SDK_ROOT, "Bin/Release"), path.join(NEM_SDK_ROOT, "Bin/Debug") }
+        libdirs { path.join(NEM_SDK_ROOT, "Bin/Release") }
     filter {}
 
     -- C#ゲームスクリプトをビルドする。SDK同梱のNEM.ScriptCore.dll等を参照する
@@ -77,13 +77,12 @@ function NEM_GameLinkEngine()
         'if exist "$(ProjectDir)Scripts\\GameScripts.csproj" dotnet build "$(ProjectDir)Scripts\\GameScripts.csproj" -c "$(Configuration)" -p:NEMScriptMetadataMode=%NEMScriptMetadataMode%',
     }
 
-    -- 実行時ランタイム(NEMEngine.dll / dxc / nethost / Managed等)をSDKから実行ファイル横へ配置する
+    -- 実行時ランタイム(NEMRuntime.dll / dxc / nethost / Managed等)をSDKから実行ファイル横へ配置する
     -- さらにゲームのGameScripts出力もManagedへまとめる
     local runtimeDir = path.translate(path.join(NEM_SDK_ROOT, "Runtime/$(Configuration)"), "\\")
-    local runtimeDebugFallback = path.translate(path.join(NEM_SDK_ROOT, "Runtime/Debug"), "\\")
     postbuildcommands {
+        'if not exist "' .. runtimeDir .. '" (echo NEMEngine runtime was not found: ' .. runtimeDir .. ' & exit /b 1)',
         'if exist "' .. runtimeDir .. '" xcopy /Y /I /E "' .. runtimeDir .. '\\*" "$(TargetDir)" >nul',
-        'if not exist "' .. runtimeDir .. '" xcopy /Y /I /E "' .. runtimeDebugFallback .. '\\*" "$(TargetDir)" >nul',
         'if exist "$(ProjectDir)Managed\\$(Configuration)\\*" xcopy /Y /I "$(ProjectDir)Managed\\$(Configuration)\\*" "$(TargetDir)Managed\\" >nul',
     }
 end

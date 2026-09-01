@@ -1,6 +1,8 @@
 {
-  "guid": "ea74aa55dbcf0e67",
-  "importer": "Json",
+  "schemaVersion": 2,
+  "guid": "4e454d4153534554ea74aa55dbcf0e67",
   "type": "Shader",
-  "version": 1
+  "importer": "ShaderImporter",
+  "importerVersion": 1,
+  "settings": {}
 }

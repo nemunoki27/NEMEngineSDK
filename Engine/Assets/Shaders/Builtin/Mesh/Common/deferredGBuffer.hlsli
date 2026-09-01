@@ -17,6 +17,9 @@ static const uint kMaterialFlagLighting = 1u << 1;
 static const uint kMaterialFlagReceiveShadow = 1u << 2;
 static const uint kMaterialFlagReceiveIBL = 1u << 3;
 static const uint kMaterialFlagReceiveReflection = 1u << 4;
+// 上位24bitはRendererの描画対象マスクとして保持する
+static const uint kRenderingLayerMaskShift = 8u;
+static const uint kRenderingLayerMaskBits = 0x00FFFFFFu;
 // フラグを持たない描画で使う全適用のデフォルト値
 static const uint kMaterialFlagLightingDefault =
 	kMaterialFlagLighting | kMaterialFlagReceiveShadow | kMaterialFlagReceiveIBL | kMaterialFlagReceiveReflection;
@@ -32,6 +35,7 @@ struct GBufferOutput {
 	float4 material : SV_TARGET3; // R メタリック, G ラフネス, B 遮蔽、オクリュージョン
 	float4 emissive : SV_TARGET4; // RGB 発光色
 	uint flags : SV_TARGET5; // マテリアルフラグ
+	float2 motion : SV_TARGET6; // 現在UVから前フレームUVへの移動量
 };
 
 struct MeshSurface {
@@ -43,6 +47,7 @@ struct MeshSurface {
 	float roughness;
 	float occlusion;
 	float3 emissive;
+	float2 motion;
 	// kMaterialFlag*のライティング適用フラグ
 	uint flags;
 };
@@ -63,7 +68,18 @@ uint BuildMaterialFlags(uint instanceFlags) {
 	if (instanceFlags & MESH_INSTANCE_FLAG_RECEIVE_REFLECTION) {
 		flags |= kMaterialFlagReceiveReflection;
 	}
+	flags |= instanceFlags &
+		(kRenderingLayerMaskBits <<
+			kRenderingLayerMaskShift);
 	return flags;
+}
+
+uint PackRenderingLayerMask(
+	uint renderingLayerMask) {
+
+	return (renderingLayerMask &
+		kRenderingLayerMaskBits) <<
+		kRenderingLayerMaskShift;
 }
 
 // メッシュサーフェイスをGBufferに設定して返す
@@ -76,6 +92,19 @@ GBufferOutput EncodeGBuffer(MeshSurface surface) {
 	output.material = float4(surface.metallic, surface.roughness, surface.occlusion, 1.0f);
 	output.emissive = float4(surface.emissive, 1.0f);
 	output.flags = kMaterialFlagSurface | surface.flags;
+	output.motion = surface.motion;
 	return output;
+}
+
+float2 ComputeGBufferMotion(float4 currentClip, float4 previousClip) {
+
+	if (currentClip.w <= 0.0f || previousClip.w <= 0.0f) {
+		return 0.0f.xx;
+	}
+	float2 currentNDC = currentClip.xy / currentClip.w;
+	float2 previousNDC = previousClip.xy / previousClip.w;
+	float2 currentUV = currentNDC * float2(0.5f, -0.5f) + 0.5f;
+	float2 previousUV = previousNDC * float2(0.5f, -0.5f) + 0.5f;
+	return currentUV - previousUV;
 }
 #endif // NEM_DEFERRED_GBUFFER_HLSLI

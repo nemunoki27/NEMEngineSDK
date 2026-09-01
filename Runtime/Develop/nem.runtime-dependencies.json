@@ -1,0 +1,10 @@
+{
+    "schemaVersion":  1,
+    "configuration":  "Develop",
+    "files":  [
+                  "NEMRuntime.dll",
+                  "dxcompiler.dll",
+                  "dxil.dll",
+                  "nethost.dll"
+              ]
+}

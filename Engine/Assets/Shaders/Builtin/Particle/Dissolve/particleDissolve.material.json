@@ -5,8 +5,8 @@
   "passes": [
     {
       "passKind": "Transparent",
-      "pipeline": "a110000000000003",
-      "shaderOverride": "a110000000000002",
+      "pipeline": "4e454d4153534554a110000000000003",
+      "shaderOverride": "4e454d4153534554a110000000000002",
       "preferredVariant": "GraphicsVertex"
     }
   ],

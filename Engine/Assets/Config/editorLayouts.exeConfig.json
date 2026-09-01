@@ -1,0 +1,94 @@
+{
+    "defaultLayoutID": "engine.default",
+    "layouts": [
+        {
+            "builtinDefault": true,
+            "displayName": "Default",
+            "imguiIniData": "",
+            "imported": false,
+            "layoutID": "engine.default",
+            "order": 0,
+            "panels": [
+                {
+                    "instanceID": "project.primary",
+                    "open": true,
+                    "primary": true,
+                    "state": {},
+                    "typeID": "Project"
+                },
+                {
+                    "instanceID": "inspector.primary",
+                    "open": true,
+                    "primary": true,
+                    "state": {
+                        "mode": "FollowSelection"
+                    },
+                    "typeID": "Inspector"
+                }
+            ],
+            "visibility": {
+                "console": true,
+                "gameView": true,
+                "hierarchy": true,
+                "inspector": true,
+                "project": true,
+                "sceneView": true,
+                "tool": true,
+                "toolbar": true
+            }
+        },
+        {
+            "builtinDefault": false,
+            "displayName": "editEffect",
+            "imguiIniData": "[Window][##EditorDockSpaceHost]\nPos=0,24\nSize=1920,1033\nCollapsed=0\n\n[Window][Toolbar]\nPos=237,24\nSize=885,32\nCollapsed=0\nDockId=0x00000005,0\n\n[Window][Hierarchy]\nPos=0,24\nSize=235,517\nCollapsed=0\nDockId=0x0000000B,0\n\n[Window][Console]\nPos=0,543\nSize=235,349\nCollapsed=0\nDockId=0x00000009,0\n\n[Window][Inspector:inspector.primary]\nPos=1124,24\nSize=796,1033\nCollapsed=0\nDockId=0x00000004,0\n\n[Window][Tool]\nPos=0,894\nSize=235,163\nCollapsed=0\nDockId=0x0000000A,0\n\n[Window][Project:project.primary]\nPos=237,578\nSize=476,479\nCollapsed=0\nDockId=0x00000007,0\n\n[Window][GameView]\nPos=237,58\nSize=885,518\nCollapsed=0\nDockId=0x0000000D,1\n\n[Window][SceneView]\nPos=237,58\nSize=885,518\nCollapsed=0\nDockId=0x0000000D,0\n\n[Window][Debug##Default]\nPos=60,60\nSize=400,400\nCollapsed=0\n\n[Window][エディターレイアウトの保存]\nPos=852,451\nSize=216,154\nCollapsed=0\n\n[Window][ParticleEffect]\nPos=1124,24\nSize=796,1033\nCollapsed=0\nDockId=0x00000004,1\n\n[Window][Project:Project.c178dd92533b7544]\nPos=715,578\nSize=407,479\nCollapsed=0\nDockId=0x00000008,0\n\n[Docking][Data]\nDockSpace           ID=0x031325F7 Window=0xEF43222D Pos=0,24 Size=1920,1033 Split=X\n  DockNode          ID=0x00000001 Parent=0x031325F7 SizeRef=235,1033 Split=Y Selected=0xBABDAE5E\n    DockNode        ID=0x0000000B Parent=0x00000001 SizeRef=207,517 Selected=0xBABDAE5E\n    DockNode        ID=0x0000000C Parent=0x00000001 SizeRef=207,514 Split=Y Selected=0xEA83D666\n      DockNode      ID=0x00000009 Parent=0x0000000C SizeRef=235,349 Selected=0xEA83D666\n      DockNode      ID=0x0000000A Parent=0x0000000C SizeRef=235,163 Selected=0x93E80FB3\n  DockNode          ID=0x00000002 Parent=0x031325F7 SizeRef=1683,1033 Split=X\n    DockNode        ID=0x00000003 Parent=0x00000002 SizeRef=885,995 Split=Y Selected=0x6B18D6E3\n      DockNode      ID=0x00000005 Parent=0x00000003 SizeRef=676,32 HiddenTabBar=1 Selected=0x0C01D6D5\n      DockNode      ID=0x00000006 Parent=0x00000003 SizeRef=676,999 Split=Y Selected=0x6B18D6E3\n        DockNode    ID=0x0000000D Parent=0x00000006 SizeRef=676,518 CentralNode=1 Selected=0x6B18D6E3\n        DockNode    ID=0x0000000E Parent=0x00000006 SizeRef=676,479 Split=X Selected=0xD119DF97\n          DockNode  ID=0x00000007 Parent=0x0000000E SizeRef=476,357 Selected=0xD119DF97\n          DockNode  ID=0x00000008 Parent=0x0000000E SizeRef=407,357 Selected=0x4DFD90B9\n    DockNode        ID=0x00000004 Parent=0x00000002 SizeRef=796,995 Selected=0x73922575\n\n",
+            "imported": false,
+            "layoutID": "engine.64ca5572cc6e5754",
+            "order": 1,
+            "panels": [
+                {
+                    "instanceID": "inspector.primary",
+                    "open": true,
+                    "primary": true,
+                    "state": {
+                        "lockedEntityUUID": "",
+                        "mode": "FollowSelection"
+                    },
+                    "typeID": "Inspector"
+                },
+                {
+                    "instanceID": "project.primary",
+                    "open": true,
+                    "primary": true,
+                    "state": {
+                        "assetSource": "Engine",
+                        "displayName": "Project",
+                        "selectedDirectory": "Engine/Assets"
+                    },
+                    "typeID": "Project"
+                },
+                {
+                    "instanceID": "Project.c178dd92533b7544",
+                    "open": true,
+                    "primary": false,
+                    "state": {
+                        "assetSource": "Game",
+                        "displayName": "Project 2",
+                        "selectedDirectory": "GameAssets"
+                    },
+                    "typeID": "Project"
+                }
+            ],
+            "visibility": {
+                "console": true,
+                "gameView": true,
+                "hierarchy": true,
+                "inspector": true,
+                "project": true,
+                "sceneView": true,
+                "tool": true,
+                "toolbar": true
+            }
+        }
+    ],
+    "schemaVersion": 1
+}

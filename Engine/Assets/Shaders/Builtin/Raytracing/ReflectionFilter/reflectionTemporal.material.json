@@ -1,0 +1,19 @@
+{
+  "name": "ReflectionTemporal",
+  "domain": "Compute",
+  "parameters": {
+    "historyWeight": 0.97,
+    "positionThreshold": 0.05,
+    "motionRejectionScale": 0.12,
+    "normalThreshold": 0.9,
+    "historyClampSigma": 1.0,
+    "reflectionPositionThreshold": 0.05
+  },
+  "passes": [
+    {
+      "passKind": "PostProcess",
+      "pipeline": "4e454d41535345546228d203578ecde4",
+      "preferredVariant": "Compute"
+    }
+  ]
+}

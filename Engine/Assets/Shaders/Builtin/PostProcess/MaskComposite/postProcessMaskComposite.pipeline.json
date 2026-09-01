@@ -1,0 +1,10 @@
+{
+  "name": "PostProcessMaskCompositePipeline",
+  "variants": [
+    {
+      "kind": "Compute",
+      "pipelineType": "Compute",
+      "shader": "4e454d415353455450504d41534b0002"
+    }
+  ]
+}

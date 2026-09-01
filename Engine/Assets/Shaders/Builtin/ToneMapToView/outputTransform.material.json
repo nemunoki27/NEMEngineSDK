@@ -1,0 +1,16 @@
+{
+  "name": "OutputTransform",
+  "domain": "Fullscreen",
+  "passes": [
+    {
+      "passKind": "Blit",
+      "pipeline": "4e454d4153534554ae00000000000013",
+      "preferredVariant": "GraphicsVertex"
+    },
+    {
+      "passKind": "Fullscreen",
+      "pipeline": "4e454d4153534554ae00000000000013",
+      "preferredVariant": "GraphicsVertex"
+    }
+  ]
+}

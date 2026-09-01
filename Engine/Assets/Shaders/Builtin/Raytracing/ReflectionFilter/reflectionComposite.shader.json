@@ -1,0 +1,11 @@
+{
+  "name": "ReflectionComposite",
+  "stages": [
+    {
+      "stage": "CS",
+      "file": "4e454d4153534554da1b7b9bf8074055",
+      "entry": "main",
+      "profile": "cs_6_6"
+    }
+  ]
+}

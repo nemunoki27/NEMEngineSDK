@@ -1,0 +1,22 @@
+{
+  "name": "ReflectionSpatial",
+  "domain": "Compute",
+  "parameters": {
+    "depthSigma": 120.0,
+    "normalPower": 32.0,
+    "hitDistanceSigma": 8.0,
+    "stepWidth": 1.0,
+    "colorSigma": 0.75,
+    "positionSigma": 2.0,
+    "antiFirefly": 0.0,
+    "fireflySigma": 1.0,
+    "fireflyMinLuminance": 0.25
+  },
+  "passes": [
+    {
+      "passKind": "PostProcess",
+      "pipeline": "4e454d41535345546228d203578ecde3",
+      "preferredVariant": "Compute"
+    }
+  ]
+}

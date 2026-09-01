@@ -1,6 +1,7 @@
 //============================================================================
 //	include
 //============================================================================
+#define NEM_ENABLE_MESH_DISPLACEMENT
 #include "../Common/defaultMesh.hlsli"
 
 groupshared float4x4 gMeshletWorldMatrix;

@@ -57,6 +57,26 @@ function Get-ChildPath {
     return $childFull
 }
 
+function Assert-FileHash {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [Parameter(Mandatory = $true)]
+        [long]$ExpectedSize,
+        [Parameter(Mandatory = $true)]
+        [string]$ExpectedSha256
+    )
+
+    $file = Get-Item -LiteralPath $Path
+    if ($file.Length -ne $ExpectedSize) {
+        throw "Cook file size mismatch: $Path"
+    }
+    $actualSha256 = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($actualSha256 -ne $ExpectedSha256.ToLowerInvariant()) {
+        throw "Cook file hash mismatch: $Path"
+    }
+}
+
 $stageDirectory = ""
 try {
     if (-not (Test-Path -LiteralPath $ManifestPath)) {
@@ -82,6 +102,17 @@ try {
         throw "Release build failed"
     }
 
+    $buildToolProject = [System.IO.Path]::GetFullPath([string]$manifest.buildToolProject)
+    $buildToolExecutable = [System.IO.Path]::GetFullPath([string]$manifest.buildToolExecutable)
+    if (-not (Test-Path -LiteralPath $buildToolProject -PathType Leaf)) {
+        throw "NEMBuildTool project was not found: $buildToolProject"
+    }
+    Write-Output "Starting Shader Cook tool build"
+    & $msbuild $buildToolProject /t:Build /p:Configuration=Release /p:Platform=x64 /m /nodeReuse:false /v:minimal
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $buildToolExecutable -PathType Leaf)) {
+        throw "NEMBuildTool build failed"
+    }
+
     $targetDirectory = Get-ChildPath -Root $outputRoot -Relative $productName
     $stageName = "." + $productName + ".building-" + $PID
     $stageDirectory = Get-ChildPath -Root $outputRoot -Relative $stageName
@@ -95,21 +126,48 @@ try {
     }
     New-Item -ItemType Directory -Path $stageDirectory -Force | Out-Null
 
-    $runtimeFiles = @(
-        $runtimeExecutable,
-        "NEMEngine.dll",
-        "dxcompiler.dll",
-        "dxil.dll",
-        "nethost.dll"
-    )
-    foreach ($runtimeFile in $runtimeFiles) {
-        $source = Join-Path $sourceRuntime $runtimeFile
+    $runtimeSource = Join-Path $sourceRuntime $runtimeExecutable
+    if (-not (Test-Path -LiteralPath $runtimeSource)) {
+        throw "Runtime executable is missing: $runtimeSource"
+    }
+    Copy-Item -LiteralPath $runtimeSource `
+        -Destination (Join-Path $stageDirectory $executableName) -Force
+
+    $runtimeManifestName = "nem.runtime-dependencies.json"
+    $runtimeManifestPath = Join-Path $sourceRuntime $runtimeManifestName
+    if (-not (Test-Path -LiteralPath $runtimeManifestPath)) {
+        throw "Runtime dependency manifest is missing: $runtimeManifestPath"
+    }
+
+    $runtimeManifest = Get-Content -LiteralPath $runtimeManifestPath -Raw -Encoding UTF8 |
+        ConvertFrom-Json
+    if ([int]$runtimeManifest.schemaVersion -ne 1) {
+        throw "Unsupported runtime dependency manifest schema"
+    }
+
+    $runtimeFiles = @($runtimeManifest.files | ForEach-Object { [string]$_ })
+    if ($runtimeFiles.Count -eq 0 -or $runtimeFiles -notcontains "NEMRuntime.dll") {
+        throw "Runtime dependency manifest does not contain NEMRuntime.dll"
+    }
+
+    $productRuntimeFiles = @($runtimeFiles | Where-Object {
+        $_ -ne "dxcompiler.dll" -and $_ -ne "dxil.dll"
+    })
+    foreach ($runtimeFile in $productRuntimeFiles) {
+        $source = Get-ChildPath -Root $sourceRuntime -Relative $runtimeFile
         if (-not (Test-Path -LiteralPath $source)) {
             throw "Runtime file is missing: $source"
         }
-        $destinationName = if ($runtimeFile -eq $runtimeExecutable) { $executableName } else { $runtimeFile }
-        Copy-Item -LiteralPath $source -Destination (Join-Path $stageDirectory $destinationName) -Force
+        $destination = Get-ChildPath -Root $stageDirectory -Relative $runtimeFile
+        $destinationDirectory = [System.IO.Path]::GetDirectoryName($destination)
+        New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+        Copy-Item -LiteralPath $source -Destination $destination -Force
     }
+    Write-Utf8Json -Path (Join-Path $stageDirectory $runtimeManifestName) -Value ([ordered]@{
+        schemaVersion = 1
+        configuration = "Release"
+        files = $productRuntimeFiles
+    })
 
     $managedSource = Join-Path $sourceRuntime "Managed"
     if (-not (Test-Path -LiteralPath $managedSource)) {
@@ -135,28 +193,119 @@ try {
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
             throw "Asset file is missing: $source"
         }
+        Assert-FileHash -Path $source -ExpectedSize ([long]$entry.size) -ExpectedSha256 ([string]$entry.sha256)
         $destination = Get-ChildPath -Root $stageDirectory -Relative $relative
         New-Item -ItemType Directory -Path ([System.IO.Path]::GetDirectoryName($destination)) -Force | Out-Null
         Copy-Item -LiteralPath $source -Destination $destination -Force
+        Assert-FileHash -Path $destination -ExpectedSize ([long]$entry.size) -ExpectedSha256 ([string]$entry.sha256)
     }
 
-    $configDirectory = Join-Path $stageDirectory "Config"
-    New-Item -ItemType Directory -Path $configDirectory -Force | Out-Null
-    Write-Utf8Json -Path (Join-Path $configDirectory "activeScene.exeConfig.json") -Value @{
+    $cookedShaderRoot = Join-Path $stageDirectory "Cooked\Shaders"
+    New-Item -ItemType Directory -Path $cookedShaderRoot -Force | Out-Null
+    Write-Output "Starting Shader Cook"
+    & $buildToolExecutable --cook-shaders $ManifestPath $cookedShaderRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw "Shader Cook failed"
+    }
+
+    # MaterialはCook済みPassだけを参照し、製品AssetDatabaseへGraph依存を残さない
+    $detachedMaterialCount = 0
+    Get-ChildItem -LiteralPath $stageDirectory -Recurse -File -Filter "*.material.json" |
+        ForEach-Object {
+            $material = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($material.PSObject.Properties.Name -contains "shaderGraph") {
+                $material.PSObject.Properties.Remove("shaderGraph")
+                Write-Utf8Json -Path $_.FullName -Value $material
+                ++$detachedMaterialCount
+            }
+        }
+    Write-Output "Detached Shader Graph source references: $detachedMaterialCount"
+
+    # 製品はCook済みDXILのみを使用し、Graph/HLSLソースを配置しない
+    Get-ChildItem -LiteralPath $stageDirectory -Recurse -File |
+        Where-Object {
+            $lower = $_.Name.ToLowerInvariant()
+            $lower.EndsWith(".hlsl") -or
+            $lower.EndsWith(".hlsli") -or
+            $lower.EndsWith(".hlsl.meta") -or
+            $lower.EndsWith(".hlsli.meta") -or
+            $lower.EndsWith(".shadergraph.json") -or
+            $lower.EndsWith(".shadergraph.json.meta")
+        } |
+        Remove-Item -Force
+
+    $packageDependencies = [ordered]@{}
+    $packageLockDependencies = [ordered]@{}
+    foreach ($package in $manifest.packages) {
+        $name = [string]$package.name
+        $version = [string]$package.version
+        $packageDependencies[$name] = $version
+        $packageLockDependencies[$name] = [ordered]@{
+            version = $version
+            source = "embedded"
+            path = $name
+            contentHash = [string]$package.contentHash
+        }
+    }
+    $packagesDirectory = Join-Path $stageDirectory "Packages"
+    New-Item -ItemType Directory -Path $packagesDirectory -Force | Out-Null
+    Write-Utf8Json -Path (Join-Path $packagesDirectory "manifest.json") -Value ([ordered]@{
+        schemaVersion = 1
+        dependencies = $packageDependencies
+    })
+    Write-Utf8Json -Path (Join-Path $packagesDirectory "packages-lock.json") -Value ([ordered]@{
+        schemaVersion = 1
+        dependencies = $packageLockDependencies
+    })
+
+    $runtimeSettingsDirectory = Join-Path $stageDirectory "ProjectSettings\Runtime"
+    New-Item -ItemType Directory -Path $runtimeSettingsDirectory -Force | Out-Null
+    Write-Utf8Json -Path (Join-Path $runtimeSettingsDirectory "StartupScene.json") -Value @{
         activeScene = [string]$manifest.startupScene
     }
-    Write-Utf8Json -Path (Join-Path $configDirectory "gameBuild.exeConfig.json") -Value @{
+    Write-Utf8Json -Path (Join-Path $runtimeSettingsDirectory "Game.json") -Value @{
         gameName = $productName
         startupFullscreen = [bool]$manifest.startupFullscreen
     }
+    $descriptorName = [System.IO.Path]::GetFileNameWithoutExtension($executableName) + ".nemproject"
+    Write-Utf8Json -Path (Join-Path $stageDirectory $descriptorName) -Value @{
+        schemaVersion = 1
+        projectGuid = [string]$manifest.projectGuid
+        name = $productName
+        assetsDirectory = "GameAssets"
+        packagesDirectory = "Packages"
+        projectSettingsDirectory = "ProjectSettings"
+    }
     Write-Utf8Json -Path (Join-Path $stageDirectory ".nemBuildManifest.json") -Value @{
+        schemaVersion = 2
         productName = $productName
         executableName = $executableName
         startupScene = [string]$manifest.startupScene
         startupFullscreen = [bool]$manifest.startupFullscreen
         assetFileCount = @($manifest.files).Count
+        packageCount = @($manifest.packages).Count
+        cookHash = [string]$manifest.cookHash
         configuration = "Release"
     }
+    $stageRootFull = [System.IO.Path]::GetFullPath($stageDirectory).TrimEnd(
+        [System.IO.Path]::DirectorySeparatorChar,
+        [System.IO.Path]::AltDirectorySeparatorChar)
+    $cookFiles = @(Get-ChildItem -LiteralPath $stageDirectory -Recurse -File |
+        ForEach-Object {
+            $relative = $_.FullName.Substring($stageRootFull.Length).TrimStart(
+                [System.IO.Path]::DirectorySeparatorChar,
+                [System.IO.Path]::AltDirectorySeparatorChar).Replace('\', '/')
+            [ordered]@{
+                path = $relative
+                size = [long]$_.Length
+                sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            }
+        } | Sort-Object { $_.path })
+    Write-Utf8Json -Path (Join-Path $stageDirectory ".nemCookManifest.json") -Value ([ordered]@{
+        schemaVersion = 1
+        cookHash = [string]$manifest.cookHash
+        files = $cookFiles
+    })
 
     if (Test-Path -LiteralPath $targetDirectory) {
         $marker = Join-Path $targetDirectory ".nemBuildManifest.json"

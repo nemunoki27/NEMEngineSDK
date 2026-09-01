@@ -1,6 +1,8 @@
 {
-  "guid": "35fa240c36c33593",
-  "importer": "nlohmann::json",
+  "schemaVersion": 2,
+  "guid": "4e454d415353455435fa240c36c33593",
   "type": "Shader",
-  "version": 1
+  "importer": "ShaderImporter",
+  "importerVersion": 1,
+  "settings": {}
 }

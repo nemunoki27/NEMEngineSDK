@@ -1,6 +1,8 @@
 {
-  "guid": "b7b248495195c9e1",
-  "importer": "nlohmann::json",
-  "type": "Unknown",
-  "version": 1
+  "guid": "2c1152732213cf42910f8b59fa762290",
+  "importer": "DefaultImporter",
+  "importerVersion": 1,
+  "schemaVersion": 2,
+  "settings": {},
+  "type": "DefaultAsset"
 }

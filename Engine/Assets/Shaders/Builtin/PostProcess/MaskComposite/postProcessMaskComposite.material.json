@@ -1,0 +1,11 @@
+{
+  "name": "PostProcessMaskComposite",
+  "domain": "Compute",
+  "passes": [
+    {
+      "passKind": "PostProcess",
+      "pipeline": "4e454d415353455450504d41534b0003",
+      "preferredVariant": "Compute"
+    }
+  ]
+}

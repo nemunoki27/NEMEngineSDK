@@ -86,7 +86,10 @@ function Sync-GameProjectSupportFiles {
         Write-Host "  更新: Premake\generate_vs2026.bat"
     }
 
-    $gitIgnoreChanged = Add-TextFileRule (Join-Path $gameRoot ".gitignore") "Project/**/*.exeConfig.json" "# NEMEngine local editor/runtime config"
+    $gitIgnorePath = Join-Path $gameRoot ".gitignore"
+    $gitIgnoreChanged = Add-TextFileRule $gitIgnorePath "Project/**/Library/" "# NEMEngine local editor/runtime data"
+    $gitIgnoreChanged = (Add-TextFileRule $gitIgnorePath "Project/**/Saved/" "# NEMEngine local editor/runtime data") -or $gitIgnoreChanged
+    $gitIgnoreChanged = (Add-TextFileRule $gitIgnorePath "Project/**/UserSettings/" "# NEMEngine local editor/runtime data") -or $gitIgnoreChanged
     if ($gitIgnoreChanged) {
         Write-Host "  更新: .gitignore"
     }

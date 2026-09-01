@@ -4,7 +4,7 @@
     {
       "kind": "GraphicsGeometry",
       "pipelineType": "Geometry",
-      "shader": "7a9d3c5e1b6f4082",
+      "shader": "4e454d41535345547a9d3c5e1b6f4082",
       "numRenderTargets": 1,
       "dynamicRenderTargetFormats": true,
       "dsvFormat": "DXGI_FORMAT_UNKNOWN",
