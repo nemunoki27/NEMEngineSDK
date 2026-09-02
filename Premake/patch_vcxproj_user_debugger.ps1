@@ -4,7 +4,8 @@
 
     [string]$WorkingDirectory = "..",
 
-    # 空でなければF5の起動先を指定する、SDKゲームは構成別NEMEditor.exeを直接起動する
+    # 空でなければDebug/DevelopのF5でNEMEditor.exeを起動する
+    # Releaseはゲーム実行ファイル自身を起動する
     [string]$DebuggerCommand = "",
 
     [string]$DebuggerType = "NativeWithManagedCore",
@@ -26,7 +27,13 @@ function Ensure-PropertyGroup {
     # 新規作成直後の <Project/> は PropertyGroup を持たない。StrictMode 下では
     # $Document.Project.PropertyGroup の直接アクセスが「メンバー無し」で throw するため、
     # ChildNodes を走査して存在チェックする（不在でも空集合で安全に進む）
-    $group = @($Document.Project.ChildNodes | Where-Object { $_.LocalName -eq 'PropertyGroup' -and $_.Condition -eq $Condition }) | Select-Object -First 1
+    $group = @(
+        $Document.Project.ChildNodes |
+            Where-Object {
+                $_.LocalName -eq 'PropertyGroup' -and
+                $_.Condition -eq $Condition
+            }
+    ) | Select-Object -First 1
     if ($null -ne $group) {
         return $group
     }
@@ -60,33 +67,58 @@ function Set-ChildValue {
     $child.InnerText = $Value
 }
 
+function Remove-Child {
+    param(
+        $Parent,
+        [string]$Name
+    )
+
+    foreach ($node in @($Parent.ChildNodes)) {
+        if ($node.LocalName -eq $Name) {
+            [void]$Parent.RemoveChild($node)
+        }
+    }
+}
+
 $resolvedUserPath = (Resolve-Path -LiteralPath $ProjectUserPath -ErrorAction SilentlyContinue)
 if ($null -ne $resolvedUserPath) {
     [xml]$document = Get-Content -LiteralPath $resolvedUserPath.Path
 } else {
     $document = New-Object xml
-    [void]$document.LoadXml('<?xml version="1.0" encoding="utf-8"?><Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />')
+    [void]$document.LoadXml(
+        '<?xml version="1.0" encoding="utf-8"?>' +
+        '<Project ToolsVersion="Current" ' +
+        'xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />'
+    )
 }
 
-$conditions = @(
-    "'`$(Configuration)|`$(Platform)'=='Debug|x64'",
-    "'`$(Configuration)|`$(Platform)'=='Develop|x64'",
-    "'`$(Configuration)|`$(Platform)'=='Release|x64'"
+$configurations = @(
+    @{ Name = "Debug"; Condition = "'`$(Configuration)|`$(Platform)'=='Debug|x64'" },
+    @{ Name = "Develop"; Condition = "'`$(Configuration)|`$(Platform)'=='Develop|x64'" },
+    @{ Name = "Release"; Condition = "'`$(Configuration)|`$(Platform)'=='Release|x64'" }
 )
 
-foreach ($condition in $conditions) {
+foreach ($configuration in $configurations) {
+    $condition = $configuration.Condition
     $group = Ensure-PropertyGroup -Document $document -Condition $condition
     Set-ChildValue -Parent $group -Name "LocalDebuggerWorkingDirectory" -Value $WorkingDirectory
     Set-ChildValue -Parent $group -Name "DebuggerFlavor" -Value "WindowsLocalDebugger"
     Set-ChildValue -Parent $group -Name "LocalDebuggerDebuggerType" -Value $DebuggerType
 
-    if (-not [string]::IsNullOrWhiteSpace($DebuggerCommand)) {
+    if ($configuration.Name -ne "Release" -and
+        -not [string]::IsNullOrWhiteSpace($DebuggerCommand)) {
         Set-ChildValue -Parent $group -Name "LocalDebuggerCommand" -Value $DebuggerCommand
+    } elseif ($configuration.Name -eq "Release") {
+        Remove-Child -Parent $group -Name "LocalDebuggerCommand"
     }
 
     # 既存の環境変数(VS既定)も引き継げるよう $(LocalDebuggerEnvironment) を末尾に残す
     if (-not [string]::IsNullOrWhiteSpace($EnvironmentVariables)) {
-        Set-ChildValue -Parent $group -Name "LocalDebuggerEnvironment" -Value ($EnvironmentVariables + "`n" + '$(LocalDebuggerEnvironment)')
+        $environment = $EnvironmentVariables + "`n" +
+            '$(LocalDebuggerEnvironment)'
+        Set-ChildValue -Parent $group `
+            -Name "LocalDebuggerEnvironment" `
+            -Value $environment
     }
 }
 
@@ -99,8 +131,15 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($ProjectUserPath, $document.OuterXml, $utf8NoBom)
 
 [xml]$verifyDocument = Get-Content -LiteralPath $ProjectUserPath -Raw
-foreach ($condition in $conditions) {
-    $group = @($verifyDocument.Project.ChildNodes | Where-Object { $_.LocalName -eq 'PropertyGroup' -and $_.Condition -eq $condition }) | Select-Object -First 1
+foreach ($configuration in $configurations) {
+    $condition = $configuration.Condition
+    $group = @(
+        $verifyDocument.Project.ChildNodes |
+            Where-Object {
+                $_.LocalName -eq 'PropertyGroup' -and
+                $_.Condition -eq $condition
+            }
+    ) | Select-Object -First 1
     if ($null -eq $group) {
         throw "Debugger property group was not written: $condition"
     }
@@ -108,9 +147,18 @@ foreach ($condition in $conditions) {
     if ($group.LocalDebuggerDebuggerType -ne $DebuggerType) {
         throw "Debugger type verification failed for $condition. Actual value: $($group.LocalDebuggerDebuggerType)"
     }
-    if (-not [string]::IsNullOrWhiteSpace($DebuggerCommand) -and
+    if ($configuration.Name -ne "Release" -and
+        -not [string]::IsNullOrWhiteSpace($DebuggerCommand) -and
         $group.LocalDebuggerCommand -ne $DebuggerCommand) {
         throw "Debugger command verification failed for $condition. Actual value: $($group.LocalDebuggerCommand)"
+    }
+    if ($configuration.Name -eq "Release" -and
+        $null -ne (
+            $group.ChildNodes |
+                Where-Object { $_.LocalName -eq "LocalDebuggerCommand" } |
+                Select-Object -First 1
+        )) {
+        throw "Release debugger must launch the game executable: $condition"
     }
 }
 
