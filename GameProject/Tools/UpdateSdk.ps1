@@ -72,7 +72,7 @@ function Sync-GameProjectSupportFiles {
     $sourceTools = Join-Path $supportRoot "Tools"
     $gameTools = Join-Path $gameRoot "Tools"
     New-Item -ItemType Directory -Force -Path $gameTools | Out-Null
-    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1")) {
+    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1", "FinalizeSdkToolMigration.ps1")) {
         $source = Join-Path $sourceTools $fileName
         if (Test-Path -LiteralPath $source) {
             Copy-Item -Force -LiteralPath $source -Destination (Join-Path $gameTools $fileName)
@@ -110,11 +110,11 @@ function Sync-GameProjectSupportFiles {
         Write-Host "  更新: .gitattributes"
     }
 
-    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1", "RepairGameProject.ps1", "ゲームプロジェクト修復.bat")) {
-        $legacyPath = Join-Path $gameRoot $fileName
-        if (Test-Path -LiteralPath $legacyPath) {
-            Remove-Item -Force -LiteralPath $legacyPath -ErrorAction SilentlyContinue
-        }
+    $finalizer = Join-Path $gameTools "FinalizeSdkToolMigration.ps1"
+    if (Test-Path -LiteralPath $finalizer -PathType Leaf) {
+        $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$finalizer`" " +
+            "-GameRoot `"$gameRoot`" -WaitForProcessID $PID"
+        Start-Process -FilePath "powershell.exe" -ArgumentList $arguments -WindowStyle Hidden
     }
 }
 

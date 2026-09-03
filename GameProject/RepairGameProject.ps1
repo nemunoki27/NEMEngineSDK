@@ -1,4 +1,4 @@
-# NEMEngine SDK support: repair/sync game-project side files.
+﻿# NEMEngine SDK support: repair/sync game-project side files.
 # Can be run from a game root:
 #   powershell -ExecutionPolicy Bypass -File .\External\NEMEngine\GameProject\RepairGameProject.ps1
 # Or from NEMEngine:
@@ -153,21 +153,30 @@ function Sync-PremakeFiles([string]$ResolvedGameRoot, [string]$ResolvedSupportRo
 function Sync-ToolSupportFiles([string]$ResolvedGameRoot, [string]$ResolvedSupportRoot) {
     $sourceTools = Join-Path $ResolvedSupportRoot "Tools"
     $gameTools = Join-Path $ResolvedGameRoot "Tools"
-    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1")) {
+    $toolFiles = @("SDK更新.bat", "UpdateSdk.ps1", "FinalizeSdkToolMigration.ps1")
+    foreach ($fileName in $toolFiles) {
         if (Copy-TemplateFile (Join-Path $sourceTools $fileName) (Join-Path $gameTools $fileName)) {
             Write-Host "  Updated: Tools\$fileName"
         }
     }
 
-    # 旧SDKがゲームルートへ配置していた入口を除去する
-    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1", "RepairGameProject.ps1", "ゲームプロジェクト修復.bat")) {
-        $legacyPath = Join-Path $ResolvedGameRoot $fileName
-        if (Test-Path -LiteralPath $legacyPath) {
-            Remove-Item -Force -LiteralPath $legacyPath -ErrorAction SilentlyContinue
-            if (-not (Test-Path -LiteralPath $legacyPath)) {
-                Write-Host "  Removed: $fileName"
-            }
+    foreach ($fileName in $toolFiles) {
+        if (-not (Test-Path -LiteralPath (Join-Path $gameTools $fileName) -PathType Leaf)) {
+            throw "ゲーム用ツールを配置できませんでした: Tools\$fileName"
         }
+    }
+
+    $legacyFiles = @("SDK更新.bat", "UpdateSdk.ps1", "RepairGameProject.ps1", "ゲームプロジェクト修復.bat")
+    $hasLegacyFile = $legacyFiles | Where-Object {
+        Test-Path -LiteralPath (Join-Path $ResolvedGameRoot $_) -PathType Leaf
+    }
+    if ($hasLegacyFile.Count -gt 0) {
+        # 実行中の旧更新バッチは削除できないため、呼び出し元終了後に別プロセスで除去する
+        $finalizer = Join-Path $gameTools "FinalizeSdkToolMigration.ps1"
+        $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$finalizer`" " +
+            "-GameRoot `"$ResolvedGameRoot`" -WaitForProcessID $PID"
+        Start-Process -FilePath "powershell.exe" -ArgumentList $arguments -WindowStyle Hidden
+        Write-Host "  Scheduled: 旧ルートツールはSDK更新終了後に削除されます"
     }
 
     $gitIgnorePath = Join-Path $ResolvedGameRoot ".gitignore"
