@@ -150,16 +150,23 @@ function Sync-PremakeFiles([string]$ResolvedGameRoot, [string]$ResolvedSupportRo
     }
 }
 
-function Sync-RootSupportFiles([string]$ResolvedGameRoot, [string]$ResolvedSupportRoot) {
-    foreach ($fileName in @("UpdateSdk.ps1", "RepairGameProject.ps1")) {
-        if (Copy-TemplateFile (Join-Path $ResolvedSupportRoot $fileName) (Join-Path $ResolvedGameRoot $fileName)) {
-            Write-Host "  Updated: $fileName"
+function Sync-ToolSupportFiles([string]$ResolvedGameRoot, [string]$ResolvedSupportRoot) {
+    $sourceTools = Join-Path $ResolvedSupportRoot "Tools"
+    $gameTools = Join-Path $ResolvedGameRoot "Tools"
+    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1")) {
+        if (Copy-TemplateFile (Join-Path $sourceTools $fileName) (Join-Path $gameTools $fileName)) {
+            Write-Host "  Updated: Tools\$fileName"
         }
     }
 
-    Get-ChildItem -LiteralPath $ResolvedSupportRoot -File -Filter "*.bat" -ErrorAction SilentlyContinue | ForEach-Object {
-        if (Copy-TemplateFile $_.FullName (Join-Path $ResolvedGameRoot $_.Name)) {
-            Write-Host "  Updated: $($_.Name)"
+    # 旧SDKがゲームルートへ配置していた入口を除去する
+    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1", "RepairGameProject.ps1", "ゲームプロジェクト修復.bat")) {
+        $legacyPath = Join-Path $ResolvedGameRoot $fileName
+        if (Test-Path -LiteralPath $legacyPath) {
+            Remove-Item -Force -LiteralPath $legacyPath -ErrorAction SilentlyContinue
+            if (-not (Test-Path -LiteralPath $legacyPath)) {
+                Write-Host "  Removed: $fileName"
+            }
         }
     }
 
@@ -191,7 +198,7 @@ Write-Host ""
 
 Ensure-ProjectDescriptor $resolvedGameRoot $gameName
 Sync-PremakeFiles $resolvedGameRoot $resolvedSupportRoot $gameName
-Sync-RootSupportFiles $resolvedGameRoot $resolvedSupportRoot
+Sync-ToolSupportFiles $resolvedGameRoot $resolvedSupportRoot
 
 Write-Host ""
 Write-Host "[Done] Synced game-project SDK support files and Git settings."

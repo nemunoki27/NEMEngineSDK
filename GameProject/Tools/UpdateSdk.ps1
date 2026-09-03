@@ -6,8 +6,8 @@
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
 $ErrorActionPreference = "Stop"
 
-# このスクリプトはゲームルート直下に置く
-$gameRoot = $PSScriptRoot
+# このスクリプトはゲームルートのTools直下に置く
+$gameRoot = Split-Path -Parent $PSScriptRoot
 $externalEngine = Join-Path $gameRoot "External\NEMEngine"
 
 function Write-Utf8NoBom([string]$Path, [string]$Text) {
@@ -69,6 +69,17 @@ function Sync-GameProjectSupportFiles {
     Write-Host ""
     Write-Host "ゲーム側サポートファイルを同期します..."
 
+    $sourceTools = Join-Path $supportRoot "Tools"
+    $gameTools = Join-Path $gameRoot "Tools"
+    New-Item -ItemType Directory -Force -Path $gameTools | Out-Null
+    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1")) {
+        $source = Join-Path $sourceTools $fileName
+        if (Test-Path -LiteralPath $source) {
+            Copy-Item -Force -LiteralPath $source -Destination (Join-Path $gameTools $fileName)
+            Write-Host "  更新: Tools\$fileName"
+        }
+    }
+
     $gameName = Get-GameProjectName
     $gamePremakeDir = Join-Path $gameRoot "Premake"
     New-Item -ItemType Directory -Force -Path $gamePremakeDir | Out-Null
@@ -97,6 +108,13 @@ function Sync-GameProjectSupportFiles {
     $gitAttributesChanged = Add-TextFileRule (Join-Path $gameRoot ".gitattributes") "*.bat text eol=crlf" "# NEMEngine Windows scripts"
     if ($gitAttributesChanged) {
         Write-Host "  更新: .gitattributes"
+    }
+
+    foreach ($fileName in @("SDK更新.bat", "UpdateSdk.ps1", "RepairGameProject.ps1", "ゲームプロジェクト修復.bat")) {
+        $legacyPath = Join-Path $gameRoot $fileName
+        if (Test-Path -LiteralPath $legacyPath) {
+            Remove-Item -Force -LiteralPath $legacyPath -ErrorAction SilentlyContinue
+        }
     }
 }
 
