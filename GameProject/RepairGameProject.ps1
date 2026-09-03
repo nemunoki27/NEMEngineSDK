@@ -1,8 +1,6 @@
 ﻿# NEMEngine SDK support: repair/sync game-project side files.
 # Can be run from a game root:
 #   powershell -ExecutionPolicy Bypass -File .\External\NEMEngine\GameProject\RepairGameProject.ps1
-# Or from NEMEngine:
-#   powershell -ExecutionPolicy Bypass -File .\Tools\RepairGameProject.ps1 -GameRoot C:\path\to\Game
 
 param(
     [string]$GameRoot = "",
