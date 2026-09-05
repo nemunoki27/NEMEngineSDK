@@ -94,6 +94,10 @@ try {
     if (-not (Test-Path -LiteralPath $projectPath)) {
         throw "ゲームプロジェクトが見つかりません: $projectPath"
     }
+    $gameScriptsProject = Join-Path ([System.IO.Path]::GetDirectoryName($projectPath)) "Scripts\GameScripts.csproj"
+    if (-not (Test-Path -LiteralPath $gameScriptsProject -PathType Leaf)) {
+        throw "C#ゲームスクリプトのプロジェクトが見つかりません: $gameScriptsProject"
+    }
 
     $buildToolProject = [string]$manifest.buildToolProject
     $buildToolExecutable = [System.IO.Path]::GetFullPath([string]$manifest.buildToolExecutable)
@@ -112,6 +116,32 @@ try {
     & $msbuild $projectPath /t:Build /p:Configuration=Release /p:Platform=x64 /m /nodeReuse:false /v:minimal
     if ($LASTEXITCODE -ne 0) {
         throw "ゲームのReleaseビルドに失敗しました"
+    }
+
+    # 製品には通常出力の最新DLLだけを使うためC#を強制再ビルドする
+    Write-Output "C#ゲームスクリプトのReleaseビルドを確認します"
+    & dotnet build $gameScriptsProject -c Release --no-incremental -p:NEMScriptMetadataMode=EditorSync
+    if ($LASTEXITCODE -ne 0) {
+        throw "C#ゲームスクリプトのReleaseビルドに失敗しました"
+    }
+
+    $managedBuildOutput = Join-Path ([System.IO.Path]::GetDirectoryName($projectPath)) "Managed\Release"
+    $managedSource = Join-Path $sourceRuntime "Managed"
+    $gameScriptsDll = Join-Path $managedBuildOutput "GameScripts.dll"
+    if (-not (Test-Path -LiteralPath $gameScriptsDll -PathType Leaf)) {
+        throw "C#ゲームスクリプトのDLLが見つかりません: $gameScriptsDll"
+    }
+    New-Item -ItemType Directory -Path $managedSource -Force | Out-Null
+    foreach ($fileName in @("GameScripts.dll", "GameScripts.deps.json", "GameScripts.pdb")) {
+        $source = Join-Path $managedBuildOutput $fileName
+        if (Test-Path -LiteralPath $source -PathType Leaf) {
+            Copy-Item -LiteralPath $source -Destination (Join-Path $managedSource $fileName) -Force
+        }
+    }
+    $deployedGameScriptsDll = Join-Path $managedSource "GameScripts.dll"
+    if ((Get-FileHash -LiteralPath $gameScriptsDll -Algorithm SHA256).Hash -ne
+        (Get-FileHash -LiteralPath $deployedGameScriptsDll -Algorithm SHA256).Hash) {
+        throw "ゲーム実行用のC#ゲームスクリプトDLLが最新ではありません"
     }
 
     if (-not [string]::IsNullOrWhiteSpace($buildToolProject)) {
@@ -181,7 +211,6 @@ try {
         files = $productRuntimeFiles
     })
 
-    $managedSource = Join-Path $sourceRuntime "Managed"
     if (-not (Test-Path -LiteralPath $managedSource)) {
         throw "C#ランタイムが見つかりません: $managedSource"
     }

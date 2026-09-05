@@ -1,0 +1,25 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NEMGameProjectRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))</NEMGameProjectRoot>
+    <NEMGameRoot>$([System.IO.Path]::GetFullPath('$(NEMGameProjectRoot)\..\..'))</NEMGameRoot>
+    <NEMGameName>$([System.IO.Path]::GetFileName('$(NEMGameProjectRoot)'))</NEMGameName>
+    <NEMGameManagedOutput>$(NEMGameRoot)\Generated\Output\$(Configuration)\$(NEMGameName)\Managed</NEMGameManagedOutput>
+  </PropertyGroup>
+
+  <Target Name="NEMDeployGameScripts" AfterTargets="Build"
+          Condition="'$(NEMScriptStagingOutput)' == ''">
+    <Error Condition="!Exists('$(TargetPath)')"
+           Text="GameScripts.dllが見つかりません: $(TargetPath)" />
+    <ItemGroup>
+      <NEMGameScriptArtifact Include="$(TargetPath)" />
+      <NEMGameScriptArtifact Include="$(TargetDir)$(TargetName).deps.json"
+                             Condition="Exists('$(TargetDir)$(TargetName).deps.json')" />
+      <NEMGameScriptArtifact Include="$(TargetDir)$(TargetName).pdb"
+                             Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    </ItemGroup>
+    <MakeDir Directories="$(NEMGameManagedOutput)" />
+    <Copy SourceFiles="@(NEMGameScriptArtifact)"
+          DestinationFolder="$(NEMGameManagedOutput)"
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>

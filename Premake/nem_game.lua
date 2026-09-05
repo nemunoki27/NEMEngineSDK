@@ -74,15 +74,17 @@ function NEM_GameLinkEngine()
         'set DOTNET_CLI_UI_LANGUAGE=en',
         'if "%NEMScriptMetadataMode%"=="" set NEMScriptMetadataMode=EditorSync',
         'if exist "' .. metaSyncDll .. '" if exist "$(ProjectDir)GameAssets" dotnet "' .. metaSyncDll .. '" --root "$(ProjectDir)GameAssets" --mode "%NEMScriptMetadataMode%"',
-        'if exist "$(ProjectDir)Scripts\\GameScripts.csproj" dotnet build "$(ProjectDir)Scripts\\GameScripts.csproj" -c "$(Configuration)" -p:NEMScriptMetadataMode=%NEMScriptMetadataMode%',
+        'if not exist "$(ProjectDir)Scripts\\GameScripts.csproj" (echo [エラー] C#ゲームスクリプトのプロジェクトが見つかりません: $(ProjectDir)Scripts\\GameScripts.csproj & exit /b 1)',
+        'if not "$(BuildingSolutionFile)"=="true" dotnet build "$(ProjectDir)Scripts\\GameScripts.csproj" -c "$(Configuration)" -p:NEMScriptMetadataMode=%NEMScriptMetadataMode%',
     }
 
     -- 実行時ランタイム(NEMRuntime.dll / dxc / nethost / Managed等)をSDKから実行ファイル横へ配置する
     -- さらにゲームのGameScripts出力もManagedへまとめる
     local runtimeDir = path.translate(path.join(NEM_SDK_ROOT, "Runtime/$(Configuration)"), "\\")
     postbuildcommands {
-        'if not exist "' .. runtimeDir .. '" (echo NEMEngine runtime was not found: ' .. runtimeDir .. ' & exit /b 1)',
+        'if not exist "' .. runtimeDir .. '" (echo [エラー] NEMEngineランタイムが見つかりません: ' .. runtimeDir .. ' & exit /b 1)',
         'if exist "' .. runtimeDir .. '" xcopy /Y /I /E "' .. runtimeDir .. '\\*" "$(TargetDir)" >nul',
         'if exist "$(ProjectDir)Managed\\$(Configuration)\\*" xcopy /Y /I "$(ProjectDir)Managed\\$(Configuration)\\*" "$(TargetDir)Managed\\" >nul',
+        'if not exist "$(TargetDir)Managed\\GameScripts.dll" (echo [エラー] ゲーム実行用のGameScripts.dllを配置できませんでした: $(TargetDir)Managed\\GameScripts.dll & exit /b 1)',
     }
 end

@@ -81,7 +81,11 @@ if not defined GENERATED_SLNX (
 for %%F in ("%GENERATED_SLNX%") do set "GAME_NAME=%%~nF"
 
 rem Add the C# script project to the solution and set the debugger working directory.
-if exist "%NEM_SDK_ROOT%\Premake\patch_script_slnx.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%NEM_SDK_ROOT%\Premake\patch_script_slnx.ps1" -SlnxPath "%GAME_ROOT%\Project\%GAME_NAME%.slnx" -GameScriptsProject "%GAME_ROOT%\Project\%GAME_NAME%\Scripts\GameScripts.csproj"
+if exist "%NEM_SDK_ROOT%\Premake\patch_script_slnx.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%NEM_SDK_ROOT%\Premake\patch_script_slnx.ps1" -SlnxPath "%GAME_ROOT%\Project\%GAME_NAME%.slnx" -GameScriptsProject "%GAME_ROOT%\Project\%GAME_NAME%\Scripts\GameScripts.csproj" -DependentProject "%GAME_ROOT%\Project\%GAME_NAME%\%GAME_NAME%.vcxproj"
+if errorlevel 1 (
+    popd
+    exit /b 1
+)
 if exist "%NEM_SDK_ROOT%\Premake\patch_vcxproj_user_debugger.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%NEM_SDK_ROOT%\Premake\patch_vcxproj_user_debugger.ps1" -ProjectUserPath "%GAME_ROOT%\Project\%GAME_NAME%\%GAME_NAME%.vcxproj.user" -WorkingDirectory ".." -DebuggerCommand "%NEM_SDK_ROOT%\Editor\$(Configuration)\NEMEditor.exe"
 
 popd

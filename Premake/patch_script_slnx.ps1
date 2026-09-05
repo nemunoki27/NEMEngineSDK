@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)]
     [string]$SlnxPath,
 
@@ -9,13 +9,17 @@ param(
     [string]$GameScriptsProject,
 
     [Parameter(Mandatory = $false)]
-    [string]$GameScriptsSolutionFolder = ""
+    [string]$GameScriptsSolutionFolder = "",
+
+    [Parameter(Mandatory = $false)]
+    [string]$DependentProject = ""
 )
 
 $ErrorActionPreference = "Stop"
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
 
 if (-not (Test-Path -LiteralPath $SlnxPath)) {
-    throw "Solution file was not found: $SlnxPath"
+    throw "ソリューションが見つかりません: $SlnxPath"
 }
 
 $slnxFullPath = (Resolve-Path -LiteralPath $SlnxPath).Path
@@ -144,7 +148,7 @@ function Add-ProjectIfMissing {
 
     $relativePath = Convert-ToSolutionRelativePath $ProjectPath
     if (-not (Test-SolutionProjectPath $relativePath)) {
-        Write-Host "[SKIP] C# project was not found: $relativePath"
+        Write-Host "[スキップ] C#プロジェクトが見つかりません: $relativePath"
         return
     }
 
@@ -158,7 +162,7 @@ function Add-ProjectIfMissing {
             $project.SetAttribute("Id", $ProjectId)
             if (-not [object]::ReferenceEquals($project.ParentNode, $parent)) {
                 [void]$parent.AppendChild($project)
-                Write-Host "[OK] Moved C# project in solution: $relativePath"
+                Write-Host "[成功] C#プロジェクトをソリューション内で移動しました: $relativePath"
             }
             return
         }
@@ -179,7 +183,40 @@ function Add-ProjectIfMissing {
         [void]$parent.AppendChild($node)
     }
 
-    Write-Host "[OK] Added C# project to solution: $relativePath"
+    Write-Host "[成功] C#プロジェクトをソリューションへ追加しました: $relativePath"
+}
+
+function Add-BuildDependency {
+    param(
+        [string]$ProjectPath,
+        [string]$DependencyPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ProjectPath) -or
+        [string]::IsNullOrWhiteSpace($DependencyPath)) {
+        return
+    }
+
+    $relativeProject = Convert-ToSolutionRelativePath $ProjectPath
+    $relativeDependency = Convert-ToSolutionRelativePath $DependencyPath
+    $project = @($solution.SelectNodes("//Project") | Where-Object {
+        $_.Path -ieq $relativeProject
+    }) | Select-Object -First 1
+    if ($null -eq $project) {
+        throw "依存元プロジェクトがソリューションに見つかりません: $relativeProject"
+    }
+
+    $existing = @($project.SelectNodes("BuildDependency") | Where-Object {
+        $_.Project -ieq $relativeDependency
+    }) | Select-Object -First 1
+    if ($null -ne $existing) {
+        return
+    }
+
+    $dependency = $xml.CreateElement("BuildDependency")
+    $dependency.SetAttribute("Project", $relativeDependency)
+    [void]$project.AppendChild($dependency)
+    Write-Host "[成功] C#プロジェクトのビルド依存を追加しました: $relativeProject"
 }
 
 Add-ProjectIfMissing $ScriptCoreProject "A10F5DB5-63D5-4B9E-9A5D-9AB2EED2E710"
@@ -189,6 +226,7 @@ $gameScriptsProjectId = if ([string]::IsNullOrWhiteSpace($GameScriptsSolutionFol
     ""
 }
 Add-ProjectIfMissing $GameScriptsProject $gameScriptsProjectId $GameScriptsSolutionFolder
+Add-BuildDependency $DependentProject $GameScriptsProject
 
 $settings = [System.Xml.XmlWriterSettings]::new()
 $settings.Indent = $true

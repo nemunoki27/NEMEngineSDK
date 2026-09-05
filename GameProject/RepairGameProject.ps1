@@ -132,6 +132,36 @@ function Ensure-ProjectDescriptor([string]$ResolvedGameRoot, [string]$GameName) 
     }
 }
 
+function Ensure-GameScriptsTargetsImport([string]$ResolvedGameRoot, [string]$GameName) {
+    $projectPath = Join-Path $ResolvedGameRoot "Project\$GameName\Scripts\GameScripts.csproj"
+    if (-not (Test-Path -LiteralPath $projectPath -PathType Leaf)) {
+        throw "C#ゲームスクリプトのプロジェクトが見つかりません: $projectPath"
+    }
+
+    $text = [System.IO.File]::ReadAllText($projectPath)
+    if ($text.Contains("NEM.GameScripts.targets")) {
+        $normalized = $text.Replace(" /></Project>", " />" + [Environment]::NewLine + "</Project>")
+        if ($normalized -ne $text) {
+            Write-Utf8NoBom $projectPath $normalized
+            Write-Host "  Updated: Project\$GameName\Scripts\GameScripts.csproj"
+        }
+        return
+    }
+
+    $import = @"
+
+  <!-- 通常ビルドの成果物をゲーム実行フォルダーへ配置する -->
+  <Import Project="`$(NEMEngineSdkManaged)\Tools\NEM.GameScripts.targets"
+          Condition="Exists('`$(NEMEngineSdkManaged)\Tools\NEM.GameScripts.targets')" />
+"@
+    if (-not $text.Contains("</Project>")) {
+        throw "C#ゲームスクリプトのプロジェクト形式が不正です: $projectPath"
+    }
+    Write-Utf8NoBom $projectPath $text.Replace(
+        "</Project>", $import + [Environment]::NewLine + "</Project>")
+    Write-Host "  Updated: Project\$GameName\Scripts\GameScripts.csproj"
+}
+
 function Sync-PremakeFiles([string]$ResolvedGameRoot, [string]$ResolvedSupportRoot, [string]$GameName) {
     $gamePremakeDir = Join-Path $ResolvedGameRoot "Premake"
     New-Item -ItemType Directory -Force -Path $gamePremakeDir | Out-Null
@@ -204,6 +234,7 @@ Write-Host "  GameName    : $gameName"
 Write-Host ""
 
 Ensure-ProjectDescriptor $resolvedGameRoot $gameName
+Ensure-GameScriptsTargetsImport $resolvedGameRoot $gameName
 Sync-PremakeFiles $resolvedGameRoot $resolvedSupportRoot $gameName
 Sync-ToolSupportFiles $resolvedGameRoot $resolvedSupportRoot
 
