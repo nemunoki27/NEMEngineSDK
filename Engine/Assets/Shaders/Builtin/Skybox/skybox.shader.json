@@ -1,0 +1,18 @@
+{
+  "name": "Skybox",
+  "stages": [
+    {
+      "stage": "VS",
+      "file": "4e454d41535345545b1c0a7e3f9d2486",
+      "entry": "main",
+      "profile": "vs_6_0"
+    },
+    {
+      "stage": "PS",
+      "file": "4e454d41535345547e2f4a9c1d8b6053",
+      "entry": "main",
+      "profile": "ps_6_6"
+    }
+  ]
+}
+

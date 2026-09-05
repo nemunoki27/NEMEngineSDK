@@ -1,0 +1,12 @@
+{
+  "name": "SkyboxIrradiance",
+  "stages": [
+    {
+      "stage": "CS",
+      "file": "4e454d4153534554aa521ebcee8fe12f",
+      "entry": "main",
+      "profile": "cs_6_6"
+    }
+  ]
+}
+

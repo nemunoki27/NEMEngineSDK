@@ -1,0 +1,12 @@
+{
+  "name": "DepthVisualize",
+  "stages": [
+    {
+      "stage": "PS",
+      "file": "4e454d4153534554a49a85bc51ad55e8",
+      "entry": "main",
+      "profile": "ps_6_0"
+    }
+  ]
+}
+

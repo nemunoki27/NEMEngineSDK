@@ -1,0 +1,12 @@
+{
+  "name": "DeferredLighting",
+  "stages": [
+    {
+      "stage": "PS",
+      "file": "4e454d4153534554d9917a9805d3373a",
+      "entry": "main",
+      "profile": "ps_6_6"
+    }
+  ]
+}
+
