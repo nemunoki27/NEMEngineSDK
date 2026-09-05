@@ -1,0 +1,9 @@
+{
+    "schemaVersion":  1,
+    "configuration":  "Release",
+    "files":  [
+                  "dxcompiler.dll",
+                  "dxil.dll",
+                  "nethost.dll"
+              ]
+}

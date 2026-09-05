@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)]
     [string]$ManifestPath
 )
@@ -35,7 +35,7 @@ function Get-MSBuildPath {
     if ($command) {
         return $command.Source
     }
-    throw "MSBuild.exe was not found"
+    throw "MSBuild.exeが見つかりません。Visual Studioのビルド環境を確認してください"
 }
 
 function Get-ChildPath {
@@ -52,7 +52,7 @@ function Get-ChildPath {
     $childFull = [System.IO.Path]::GetFullPath((Join-Path $rootFull $Relative))
     $prefix = $rootFull + [System.IO.Path]::DirectorySeparatorChar
     if (-not $childFull.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Path escapes the output directory: $Relative"
+        throw "出力フォルダーの外を参照するパスは使用できません: $Relative"
     }
     return $childFull
 }
@@ -69,18 +69,18 @@ function Assert-FileHash {
 
     $file = Get-Item -LiteralPath $Path
     if ($file.Length -ne $ExpectedSize) {
-        throw "Cook file size mismatch: $Path"
+        throw "Cook対象ファイルのサイズが一致しません: $Path"
     }
     $actualSha256 = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($actualSha256 -ne $ExpectedSha256.ToLowerInvariant()) {
-        throw "Cook file hash mismatch: $Path"
+        throw "Cook対象ファイルのハッシュが一致しません: $Path"
     }
 }
 
 $stageDirectory = ""
 try {
     if (-not (Test-Path -LiteralPath $ManifestPath)) {
-        throw "Game build manifest was not found"
+        throw "製品ビルドのマニフェストが見つかりません"
     }
 
     $manifest = Get-Content -LiteralPath $ManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -92,25 +92,37 @@ try {
     $executableName = [string]$manifest.executableName
 
     if (-not (Test-Path -LiteralPath $projectPath)) {
-        throw "Game project was not found: $projectPath"
+        throw "ゲームプロジェクトが見つかりません: $projectPath"
+    }
+
+    $buildToolProject = [string]$manifest.buildToolProject
+    $buildToolExecutable = [System.IO.Path]::GetFullPath([string]$manifest.buildToolExecutable)
+    if (-not [string]::IsNullOrWhiteSpace($buildToolProject)) {
+        $buildToolProject = [System.IO.Path]::GetFullPath($buildToolProject)
+        if (-not (Test-Path -LiteralPath $buildToolProject -PathType Leaf)) {
+            throw "製品ビルドツールのプロジェクトが見つかりません: $buildToolProject"
+        }
+    }
+    elseif (-not (Test-Path -LiteralPath $buildToolExecutable -PathType Leaf)) {
+        throw "SDKの製品ビルドツールが見つかりません。SDKを更新してください: $buildToolExecutable"
     }
 
     $msbuild = Get-MSBuildPath
-    Write-Output "Starting Release build"
+    Write-Output "ゲームのReleaseビルドを開始します"
     & $msbuild $projectPath /t:Build /p:Configuration=Release /p:Platform=x64 /m /nodeReuse:false /v:minimal
     if ($LASTEXITCODE -ne 0) {
-        throw "Release build failed"
+        throw "ゲームのReleaseビルドに失敗しました"
     }
 
-    $buildToolProject = [System.IO.Path]::GetFullPath([string]$manifest.buildToolProject)
-    $buildToolExecutable = [System.IO.Path]::GetFullPath([string]$manifest.buildToolExecutable)
-    if (-not (Test-Path -LiteralPath $buildToolProject -PathType Leaf)) {
-        throw "NEMBuildTool project was not found: $buildToolProject"
+    if (-not [string]::IsNullOrWhiteSpace($buildToolProject)) {
+        Write-Output "製品ビルドツールをビルドしています"
+        & $msbuild $buildToolProject /t:Build /p:Configuration=Release /p:Platform=x64 /m /nodeReuse:false /v:minimal
+        if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $buildToolExecutable -PathType Leaf)) {
+            throw "製品ビルドツールのビルドに失敗しました"
+        }
     }
-    Write-Output "Starting Shader Cook tool build"
-    & $msbuild $buildToolProject /t:Build /p:Configuration=Release /p:Platform=x64 /m /nodeReuse:false /v:minimal
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $buildToolExecutable -PathType Leaf)) {
-        throw "NEMBuildTool build failed"
+    else {
+        Write-Output "SDKに同梱された製品ビルドツールを使用します"
     }
 
     $targetDirectory = Get-ChildPath -Root $outputRoot -Relative $productName
@@ -128,7 +140,7 @@ try {
 
     $runtimeSource = Join-Path $sourceRuntime $runtimeExecutable
     if (-not (Test-Path -LiteralPath $runtimeSource)) {
-        throw "Runtime executable is missing: $runtimeSource"
+        throw "ゲームの実行ファイルが見つかりません: $runtimeSource"
     }
     Copy-Item -LiteralPath $runtimeSource `
         -Destination (Join-Path $stageDirectory $executableName) -Force
@@ -136,18 +148,18 @@ try {
     $runtimeManifestName = "nem.runtime-dependencies.json"
     $runtimeManifestPath = Join-Path $sourceRuntime $runtimeManifestName
     if (-not (Test-Path -LiteralPath $runtimeManifestPath)) {
-        throw "Runtime dependency manifest is missing: $runtimeManifestPath"
+        throw "ランタイム依存関係のマニフェストが見つかりません: $runtimeManifestPath"
     }
 
     $runtimeManifest = Get-Content -LiteralPath $runtimeManifestPath -Raw -Encoding UTF8 |
         ConvertFrom-Json
     if ([int]$runtimeManifest.schemaVersion -ne 1) {
-        throw "Unsupported runtime dependency manifest schema"
+        throw "ランタイム依存関係のマニフェスト形式に対応していません"
     }
 
     $runtimeFiles = @($runtimeManifest.files | ForEach-Object { [string]$_ })
     if ($runtimeFiles.Count -eq 0 -or $runtimeFiles -notcontains "NEMRuntime.dll") {
-        throw "Runtime dependency manifest does not contain NEMRuntime.dll"
+        throw "ランタイム依存関係のマニフェストにNEMRuntime.dllが含まれていません"
     }
 
     $productRuntimeFiles = @($runtimeFiles | Where-Object {
@@ -156,7 +168,7 @@ try {
     foreach ($runtimeFile in $productRuntimeFiles) {
         $source = Get-ChildPath -Root $sourceRuntime -Relative $runtimeFile
         if (-not (Test-Path -LiteralPath $source)) {
-            throw "Runtime file is missing: $source"
+            throw "ランタイムファイルが見つかりません: $source"
         }
         $destination = Get-ChildPath -Root $stageDirectory -Relative $runtimeFile
         $destinationDirectory = [System.IO.Path]::GetDirectoryName($destination)
@@ -171,7 +183,7 @@ try {
 
     $managedSource = Join-Path $sourceRuntime "Managed"
     if (-not (Test-Path -LiteralPath $managedSource)) {
-        throw "Managed runtime was not found: $managedSource"
+        throw "C#ランタイムが見つかりません: $managedSource"
     }
     $managedSourceFull = [System.IO.Path]::GetFullPath($managedSource).TrimEnd(
         [System.IO.Path]::DirectorySeparatorChar,
@@ -191,7 +203,7 @@ try {
         $source = [System.IO.Path]::GetFullPath([string]$entry.source)
         $relative = [string]$entry.destination
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
-            throw "Asset file is missing: $source"
+            throw "アセットファイルが見つかりません: $source"
         }
         Assert-FileHash -Path $source -ExpectedSize ([long]$entry.size) -ExpectedSha256 ([string]$entry.sha256)
         $destination = Get-ChildPath -Root $stageDirectory -Relative $relative
@@ -202,10 +214,10 @@ try {
 
     $cookedShaderRoot = Join-Path $stageDirectory "Cooked\Shaders"
     New-Item -ItemType Directory -Path $cookedShaderRoot -Force | Out-Null
-    Write-Output "Starting Shader Cook"
+    Write-Output "シェーダーのCookを開始します"
     & $buildToolExecutable --cook-shaders $ManifestPath $cookedShaderRoot
     if ($LASTEXITCODE -ne 0) {
-        throw "Shader Cook failed"
+        throw "シェーダーのCookに失敗しました。直前の診断ログを確認してください"
     }
 
     # MaterialはCook済みPassだけを参照し、製品AssetDatabaseへGraph依存を残さない
@@ -219,7 +231,7 @@ try {
                 ++$detachedMaterialCount
             }
         }
-    Write-Output "Detached Shader Graph source references: $detachedMaterialCount"
+    Write-Output "Shader Graphのソース参照を解除しました: $detachedMaterialCount"
 
     # 製品はCook済みDXILのみを使用し、Graph/HLSLソースを配置しない
     Get-ChildItem -LiteralPath $stageDirectory -Recurse -File |
@@ -310,7 +322,7 @@ try {
     if (Test-Path -LiteralPath $targetDirectory) {
         $marker = Join-Path $targetDirectory ".nemBuildManifest.json"
         if (-not (Test-Path -LiteralPath $marker -PathType Leaf)) {
-            throw "Existing directory is not a NEMEngine product build: $targetDirectory"
+            throw "既存のフォルダーはNEMEngineの製品ビルドではないため上書きできません: $targetDirectory"
         }
         Move-Item -LiteralPath $targetDirectory -Destination $backupDirectory
     }
@@ -330,7 +342,7 @@ try {
         Remove-Item -LiteralPath $backupDirectory -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    Write-Output "Product build completed: $targetDirectory"
+    Write-Output "製品ビルドが完了しました: $targetDirectory"
     exit 0
 }
 catch {
