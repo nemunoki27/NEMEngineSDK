@@ -1,4 +1,5 @@
 ﻿# ゲームが参照する NEMEngine SDK を最新へ更新する
+# SDK更新処理バージョン: 2
 # - git submodule 参照: SDK専用リポジトリから最新を取得する
 # - ローカル junction 参照: SDK作成.bat の再エクスポート結果がそのまま反映されるため取得は不要
 # 最後に Visual Studio プロジェクトを再生成し、全構成(Debug/Develop/Release)をリビルドする
@@ -9,6 +10,80 @@ $ErrorActionPreference = "Stop"
 # このスクリプトはゲームルートのTools直下に置く
 $gameRoot = Split-Path -Parent $PSScriptRoot
 $externalEngine = Join-Path $gameRoot "External\NEMEngine"
+$updaterSource = [System.IO.File]::ReadAllText($PSCommandPath)
+
+# Gitの途中失敗を後続コマンドの成功で隠さない
+function Invoke-SdkGit([string[]]$Arguments) {
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & git -C $externalEngine @Arguments 2>&1
+        $code = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousPreference
+    }
+    if ($code -ne 0) {
+        throw "SDKのGit処理に失敗しました: git $($Arguments -join ' ')`n$($output -join [Environment]::NewLine)"
+    }
+    return $output
+}
+
+# 実行中のEditorやゲームがある場合はSDKを変更しない
+function Assert-SdkNotInUse {
+    $gameName = Get-GameProjectName
+    $running = @(Get-Process -Name "NEMEditor", $gameName -ErrorAction SilentlyContinue)
+    if ($running.Count -ne 0) {
+        throw "Editorとゲームを終了してからSDK更新を実行してください: $($running.Id -join ', ')"
+    }
+    foreach ($directory in @("Editor", "Bin")) {
+        $binaryRoot = Join-Path $externalEngine $directory
+        if (-not (Test-Path -LiteralPath $binaryRoot)) { continue }
+        foreach ($file in Get-ChildItem -LiteralPath $binaryRoot -Recurse -File) {
+            if ($file.Extension -notin @(".exe", ".dll")) { continue }
+            try {
+                $stream = [System.IO.File]::Open($file.FullName,
+                    [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read,
+                    [System.IO.FileShare]::None)
+                $stream.Dispose()
+            } catch {
+                throw "SDKのファイルが使用中、または読み取りできません: $($file.FullName)"
+            }
+        }
+    }
+}
+
+# SDK以外のリポジトリを誤って更新しない
+function Update-SdkRepository {
+    if (-not (Test-Path -LiteralPath (Join-Path $externalEngine ".git"))) {
+        throw "External\NEMEngineのGit管理情報がありません。サブモジュールの初期化を確認してください。"
+    }
+    $repositoryRoot = (Invoke-SdkGit @("rev-parse", "--show-toplevel") | Out-String).Trim()
+    if ([System.IO.Path]::GetFullPath($repositoryRoot).TrimEnd('\', '/') -ne
+        [System.IO.Path]::GetFullPath($externalEngine).TrimEnd('\', '/')) {
+        throw "SDKのGitルートがExternal\NEMEngineと一致しません。更新を中止します。"
+    }
+
+    Invoke-SdkGit @("fetch", "origin", "+refs/heads/main:refs/remotes/origin/main") | Out-Host
+    $target = (Invoke-SdkGit @("rev-parse", "--verify", "origin/main^{commit}") | Out-String).Trim()
+    $before = (Invoke-SdkGit @("rev-parse", "HEAD") | Out-String).Trim()
+    Write-Host "SDK更新: $before -> $target"
+
+    # 未追跡のシーンや無視対象も退避し、配布ファイルと混在させない
+    $changes = @(Invoke-SdkGit @("status", "--porcelain", "--untracked-files=all", "--ignored"))
+    if ($changes.Count -ne 0) {
+        $backupName = "NEMEngine SDK update backup " + (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+        Invoke-SdkGit @("stash", "push", "--all", "-m", $backupName) | Out-Host
+        $backup = (Invoke-SdkGit @("rev-parse", "refs/stash") | Out-String).Trim()
+        Write-Host "SDK内の変更をGit stashへ退避しました: $backup"
+        Write-Host "退避内容は自動復元しません。必要なシーン等はこの退避から取り出してください。"
+    }
+    Invoke-SdkGit @("reset", "--hard", $target) | Out-Host
+    Invoke-SdkGit @("submodule", "update", "--init", "--recursive") | Out-Host
+    $actual = (Invoke-SdkGit @("rev-parse", "HEAD") | Out-String).Trim()
+    if ($actual -ne $target) { throw "SDKの更新先が一致しません: $actual / $target" }
+    Invoke-SdkGit @("diff", "--quiet", "HEAD", "--") | Out-Host
+    Write-Host "[確認済み] SDKのHEADと追跡ファイルが更新先に一致しました: $actual"
+}
 
 function Write-Utf8NoBom([string]$Path, [string]$Text) {
     $dir = Split-Path -Parent $Path
@@ -118,6 +193,7 @@ function Sync-GameProjectSupportFiles {
     }
 }
 
+try {
 Write-Host "============================================"
 Write-Host "  NEMEngine SDK 更新"
 Write-Host "============================================"
@@ -133,40 +209,34 @@ if (-not (Test-Path -LiteralPath $externalEngine)) {
 $item = Get-Item -LiteralPath $externalEngine -Force
 $isJunction = [bool]($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)
 
+Assert-SdkNotInUse
+
 if ($isJunction) {
     Write-Host "ローカルSDK(ジャンクション)参照です。"
     Write-Host "エンジン側で SDK作成.bat を実行すれば、その内容がそのまま反映されます。取得は不要です。"
 } else {
     Write-Host "SDKリポジトリから最新を取得します..."
-    # git は進捗やメッセージを stderr へ出すため、ネイティブ stderr でスクリプトを止めないよう一時的に緩める
-    $prevEAP = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    $updateOk = $false
-    Push-Location $externalEngine
-    try {
-        git fetch origin
-        # 実行中エディタが書き込んだ設定ファイル等のローカル変更を破棄し、確実に最新SDK(origin/main)へ揃える
-        # SDKは配布物なのでローカル変更を保持する必要はない
-        git reset --hard origin/main
-        git submodule update --init --recursive
-        $updateOk = ($LASTEXITCODE -eq 0)
-    } finally {
-        Pop-Location
-        $ErrorActionPreference = $prevEAP
-    }
-    if (-not $updateOk) {
-        Write-Host ""
-        Write-Host "[エラー] SDKの取得に失敗しました。External\NEMEngine の状態を確認してください。"
-        Read-Host "Enterキーを押すと終了します"
-        exit 1
-    }
+    Update-SdkRepository
 }
 
 $repairScript = Join-Path $externalEngine "GameProject\RepairGameProject.ps1"
+try {
 if (Test-Path -LiteralPath $repairScript) {
+    $global:LASTEXITCODE = 0
     & $repairScript -GameRoot $gameRoot
+    if ($LASTEXITCODE -ne 0) { throw "ゲームプロジェクトの修復に失敗しました。" }
 } else {
     Sync-GameProjectSupportFiles
+}
+} finally {
+# 旧SDKへの更新でも修正版の更新処理を旧版へ戻さない
+$installedUpdater = Join-Path $gameRoot "Tools\UpdateSdk.ps1"
+$installedSource = [System.IO.File]::ReadAllText($installedUpdater)
+$installedRevision = [regex]::Match($installedSource, 'SDK更新処理バージョン: (\d+)')
+if (-not $installedRevision.Success -or [int]$installedRevision.Groups[1].Value -lt 2) {
+    [System.IO.File]::WriteAllText($installedUpdater, $updaterSource,
+        [System.Text.UTF8Encoding]::new($true))
+}
 }
 
 Write-Host ""
@@ -193,9 +263,9 @@ $slnx = Get-ChildItem -LiteralPath (Join-Path $gameRoot "Project") -Filter "*.sl
 
 if ([string]::IsNullOrWhiteSpace($msbuild) -or -not (Test-Path $msbuild) -or -not $slnx) {
     Write-Host ""
-    Write-Host "[完了] SDKは更新しました。MSBuildまたはソリューションが見つからないため、Visual Studio で手動ビルドしてください。"
+    Write-Host "[未完了] SDKは更新しましたが、MSBuildまたはソリューションが見つかりません。Visual Studioで手動ビルドしてください。"
     Read-Host "Enterキーを押すと終了します"
-    exit 0
+    exit 1
 }
 
 # msbuildは進捗をstderrへ出すことがあるため、ネイティブstderrで止めない
@@ -219,7 +289,13 @@ Write-Host ""
 if ($buildOk) {
     Write-Host "[完了] SDK更新と全構成のリビルドが完了しました。"
 } else {
-    Write-Host "[完了] SDKは更新しましたが、一部構成のビルドに失敗しました。ログを確認してください。"
+    throw "SDKは更新しましたが、一部構成のビルドに失敗しました。ログを確認してください。"
 }
 Write-Host ""
 Read-Host "Enterキーを押すと終了します"
+exit 0
+} catch {
+    Write-Host "[エラー] $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "SDK更新は完了していません。上記の原因を解消してから再実行してください。"
+    exit 1
+}
