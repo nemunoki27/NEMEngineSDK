@@ -31,6 +31,9 @@ struct PSOutput {
 PSOutput main(VSOutput input) {
 
 	const float ratio = saturate(progress);
+	input.localTexcoord = ResolvePrimitiveLocalUV(input.uvCoordinates, input.ringParams);
+	input.texcoord = ResolvePrimitivePixelUV(input.texcoord,
+		input.uvCoordinates, input.ringParams, input.uvBasis);
 	if (ratio <= 0.0f) {
 		discard;
 	}

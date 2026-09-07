@@ -1,6 +1,8 @@
 #ifndef NEM_PRIMITIVE_HLSLI
 #define NEM_PRIMITIVE_HLSLI
 
+#include "primitiveUV.hlsli"
+
 //============================================================================
 //	Primitive 共有型
 //	頂点はMeshVertexを共用し、描画とレイトレで同じバッファを読む
@@ -111,6 +113,9 @@ struct VSOutput {
 	float4 previousClipPosition : TEXCOORD7;
 	nointerpolation uint entityIndex : TEXCOORD8;
 	nointerpolation uint entityGeneration : TEXCOORD9;
+	float4 uvCoordinates : TEXCOORD10;
+	nointerpolation float4 ringParams : TEXCOORD11;
+	nointerpolation float4 uvBasis : TEXCOORD12;
 };
 
 VSOutput BuildPrimitiveVertexOutput(
@@ -123,6 +128,9 @@ VSOutput BuildPrimitiveVertexOutput(
 	PrimitiveInstance instance) {
 
 	VSOutput output;
+	output.uvCoordinates = float4(localPosition.xy, uv);
+	output.ringParams = instance.shapeParams1.z > 0.5f ? instance.shapeParams0 : 0.0f.xxxx;
+	output.uvBasis = float4(instance.uvMatrix[0].xy, instance.uvMatrix[1].xy);
 	const float2 transformedUV = mul(
 		float4(uv, 0.0f, 1.0f), instance.uvMatrix).xy;
 	if (abs(displacementScale) > 0.000001f) {

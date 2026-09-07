@@ -27,7 +27,9 @@ struct PSOutput {
 PSOutput main(VSOutput input) {
 
 	// ベースカラー = マテリアル色 × テクスチャ、ライティングは行わない
-	float4 baseColor = baseColorTexture.Sample(gSampler, input.texcoord) * color;
+	const float2 uv = ResolvePrimitivePixelUV(input.texcoord,
+		input.uvCoordinates, input.ringParams, input.uvBasis);
+	float4 baseColor = baseColorTexture.Sample(gSampler, uv) * color;
 
 	PSOutput output;
 	output.color = baseColor;

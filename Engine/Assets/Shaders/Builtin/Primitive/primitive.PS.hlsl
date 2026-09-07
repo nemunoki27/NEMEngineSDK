@@ -18,7 +18,8 @@ struct TransparentPSOutput {
 //============================================================================
 ResolvedPBRMaterial ResolvePrimitiveMaterial(VSOutput input) {
 
-	float2 uv = input.texcoord;
+	float2 uv = ResolvePrimitivePixelUV(input.texcoord,
+		input.uvCoordinates, input.ringParams, input.uvBasis);
 
 	// ベースカラー = マテリアル色 × テクスチャ
 	float4 baseColor = baseColorTexture.Sample(gSampler, uv) * color * input.vertexColor;

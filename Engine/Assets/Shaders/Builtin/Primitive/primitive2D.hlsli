@@ -1,6 +1,8 @@
 #ifndef NEM_PRIMITIVE2D_HLSLI
 #define NEM_PRIMITIVE2D_HLSLI
 
+#include "primitiveUV.hlsli"
+
 //============================================================================
 //	Primitive2D 共有型
 //	頂点とインスタンスは3D描画と共用し、正射投影で前方描画する
@@ -33,6 +35,9 @@ struct VSOutput {
 	float4 position : SV_POSITION;
 	float2 texcoord : TEXCOORD0;
 	float2 localTexcoord : TEXCOORD1;
+	float4 uvCoordinates : TEXCOORD2;
+	nointerpolation float4 ringParams : TEXCOORD3;
+	nointerpolation float4 uvBasis : TEXCOORD4;
 };
 
 float2 ResolvePrimitive2DTexcoord(
@@ -59,6 +64,9 @@ VSOutput BuildPrimitive2DVertexOutput(
 	output.position = mul(worldPosition, viewProjection);
 	output.localTexcoord = ResolvePrimitive2DTexcoord(
 		uv, instance);
+	output.uvCoordinates = float4(localPosition.xy, output.localTexcoord);
+	output.ringParams = instance.shapeParams1.z > 0.5f ? instance.shapeParams0 : 0.0f.xxxx;
+	output.uvBasis = float4(instance.uvMatrix[0].xy, instance.uvMatrix[1].xy);
 	output.texcoord = mul(
 		float4(output.localTexcoord, 0.0f, 1.0f),
 		instance.uvMatrix).xy;

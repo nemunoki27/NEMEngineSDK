@@ -20,7 +20,8 @@ StructuredBuffer<uint> gIndices : register(t2);
 //	main
 //	1スレッド1三角形、頂点は共有せず展開する汎用のvertex-fetch
 //============================================================================
-#define PRIMITIVE_GROUP_TRIANGLES 64
+// RingのUV補間情報を含めてMSの出力サイズ上限に収める
+#define PRIMITIVE_GROUP_TRIANGLES 32
 
 [numthreads(PRIMITIVE_GROUP_TRIANGLES, 1, 1)]
 [outputtopology("triangle")]
