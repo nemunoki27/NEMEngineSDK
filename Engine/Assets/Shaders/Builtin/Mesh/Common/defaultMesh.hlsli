@@ -105,7 +105,10 @@ StructuredBuffer<MeshletBounds> gMeshletBounds : register(t4, space1);
 StructuredBuffer<uint> gPackedMeshletVertexIndices : register(t5, space1);
 Texture2D<float> gOcclusionDepthPyramid : register(t7, space1);
 
+// グラフのマテリアル構造体は生成シェーダー側で宣言する
+#if !defined(NEM_SHADER_GRAPH_MATERIAL)
 #include "meshPBRMaterial.hlsli"
+#endif
 
 #define NEM_OCCLUSION_DEPTH_PYRAMID gOcclusionDepthPyramid
 #include "../../Common/CullingHelpers.hlsli"
